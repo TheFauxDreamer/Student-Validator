@@ -1,0 +1,3438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Validator v2.8.4b</title>
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Layout Containers */
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #2563eb;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            padding: 1rem;
+            gap: 1rem;
+            overflow: hidden;
+            height: calc(100vh - 64px);
+        }
+
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Settings Button */
+        .settings-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .settings-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Settings Modal */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal.active {
+            display: flex;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 8px;
+            width: 800px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-left {
+            width: 50%;
+            padding: 1.5rem;
+            border-right: 1px solid #e5e7eb;
+            overflow-y: auto;
+        }
+
+        .settings-right {
+            width: 50%;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            overflow-y: auto;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .settings-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0.5rem;
+        }
+
+        .settings-close:hover {
+            color: #111827;
+        }
+
+        .settings-option {
+            padding: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .settings-option:hover {
+            background-color: #f3f4f6;
+        }
+
+        .settings-option label {
+            cursor: pointer;
+            user-select: none;
+            margin-left: 0.5rem;
+            color: #374151;
+        }
+
+        .settings-description {
+            display: none;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            margin-top: 1rem;
+        }
+
+        .settings-description.active {
+            display: block;
+        }
+
+        .settings-description h3 {
+            color: #111827;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-description p {
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        /* Upload Areas */
+        .upload-areas {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .upload-area {
+            width: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-area:hover:not(.disabled) {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .upload-area.dragover:not(.disabled) {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .upload-area.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .upload-area.success {
+            background-color: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.8);
+        }
+
+        .file-status {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #22c55e;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
+        }
+
+        .stat-box {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            position: relative;
+        }
+
+        .stat-box.clickable {
+            cursor: pointer;
+        }
+
+        .stat-box.error {
+            background-color: rgba(239, 83, 80, 0.1);
+            border-color: #ef5350;
+        }
+
+        .stat-box.warning {
+            background-color: rgba(255, 183, 77, 0.1);
+            border-color: #ffb74d;
+        }
+
+        .stat-box.student-errors {
+            background-color: rgba(99, 102, 241, 0.1);
+            border: 1px solid #6366f1;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .info-icon {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border: 1px solid currentColor;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-style: italic;
+            opacity: 0.6;
+        }
+
+        .error .info-icon {
+            color: #ef5350;
+        }
+
+        .warning .info-icon {
+            color: #ffb74d;
+        }
+
+        /* Student List */
+        .student-list {
+            flex: 1;
+            max-width: 33%;
+            border-right: 1px solid #e5e7eb;
+            padding-right: 1rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .students {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Student Card */
+        .student-card {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .student-card:hover {
+            background-color: #f3f4f6;
+        }
+
+        .student-card.active {
+            background-color: #e5e7eb;
+        }
+
+        .student-card.error-highlight {
+            background-color: rgba(239, 83, 80, 0.1);
+            border-color: #ef5350;
+        }
+
+        .student-card.warning-highlight {
+            background-color: rgba(255, 183, 77, 0.1) !important;
+            border: 1px solid #ffb74d !important;
+        }
+
+        /* Student Details */
+        .student-details {
+            flex: 2;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            overflow-y: auto;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .detail-section {
+            background-color: white;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .detail-section h3 {
+            margin-bottom: 0.5rem;
+            color: #2563eb;
+            font-size: 1.1rem;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: #f8fafc;
+            border-radius: 0.25rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            width: 150px;
+            color: #475569;
+        }
+
+        .error-highlight {
+            background-color: rgba(239, 83, 80, 0.1) !important;
+            border: 1px solid #ef5350 !important;
+        }
+
+        .warning-highlight {
+            background-color: rgba(255, 183, 77, 0.1) !important;
+            border: 1px solid #ffb74d !important;
+        }
+
+        .error-text {
+            color: #ef5350;
+            font-size: 0.8em;
+            margin-top: 0.25rem;
+            padding-left: 0.5rem;
+        }
+
+        .warning-text {
+            color: #854d0e;
+            /* Darker amber/brown color */
+            font-size: 0.8em;
+            margin-top: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .medical-details {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .medical-details.visible {
+            display: block;
+        }
+
+        .medical-condition {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+        }
+
+        .medical-condition.attention {
+            border-left: 4px solid #3b82f6;
+        }
+
+        .condition-content {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 0.5rem;
+        }
+
+        .condition-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .condition-header {
+            color: #4b5563;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1rem 0 0.75rem 0;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .condition-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #3b82f6;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #eff6ff;
+            border-radius: 0.25rem;
+        }
+
+        .condition-alert svg {
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25rem;
+        }
+
+        .condition-notes {
+            display: none;
+            font-size: 0.875rem;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-top: 0.5rem;
+        }
+
+        .show-medical-notes .condition-notes {
+            display: block;
+        }
+
+        .condition-value {
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+        }
+
+        .medical-condition .warning-text {
+            margin-top: 0.5rem;
+            grid-column: 1 / -1;
+            /* Make warning span both columns */
+            padding-left: 0.5rem;
+        }
+
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        /* OLD from before the content in no-selection (mostly the video)
+        .no-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6b7280;
+            text-align: center;
+            padding: 2rem;
+        }
+*/
+        .relationship-tag {
+            background-color: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8em;
+            margin-left: 0.5rem;
+            color: #475569;
+        }
+
+        /* Summary Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .error-summary-item,
+        .warning-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .error-summary-item {
+            background-color: rgba(239, 83, 80, 0.1);
+        }
+
+        .warning-summary-item {
+            background-color: rgba(255, 183, 77, 0.1);
+        }
+
+        .summary-count {
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            /* 16:9 aspect ratio */
+            height: 0;
+            margin-top: 2rem;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .no-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            color: #6b7280;
+            text-align: center;
+            padding: 2rem;
+            overflow-y: auto;
+            /* Allow scrolling if content is too long */
+            position: relative;
+            /* Ensure proper stacking */
+            margin: 0;
+            /* Reset any margins */
+            scroll-behavior: smooth;
+            /* Enable smooth scrolling */
+            -webkit-overflow-scrolling: touch;
+            /* Smooth scrolling for iOS */
+        }
+
+        /* Add some breathing room at the top of the content */
+        .no-selection>h2 {
+            margin-top: 0;
+        }
+
+        /* Make sure video container doesn't cause overflow 
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio
+    height: 0;
+    margin: 2rem auto;
+    max-width: 800px;
+    width: 100%;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+} */
+
+        .checks-container {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            justify-content: center;
+            width: 100%;
+            /* Ensure full width */
+        }
+
+        .check-section {
+            flex: 1;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .check-section h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .check-section ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .check-section li {
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .check-section li:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(8px);
+            }
+
+            60% {
+                transform: translateY(4px);
+            }
+        }
+
+        .scroll-indicator {
+            color: #2563eb;
+            font-size: 2rem;
+            margin: -0.5rem 0;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .scroll-indicator:hover {
+            opacity: 1;
+        }
+
+        .instructions-container {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .instruction-section {
+            flex: 1;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions-title {
+            text-align: center;
+            color: #111827;
+            font-size: 1.5rem;
+            margin: 1rem 0rem;
+            text-align: center;
+        }
+
+        .instruction-section h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: center;
+            justify-content: center;
+            /* Add this line */
+            width: 100%;
+            /* Add this line */
+        }
+
+        .instruction-section .time-estimate {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background-color: #f3f4f6;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instruction-steps {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .instruction-steps li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: grid;
+            grid-template-columns: 2rem 1fr;
+            gap: 0.75rem;
+            text-align: left;
+            /* Left align the instruction content */
+        }
+
+        .instruction-steps li:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        /* For nested lists */
+        .instruction-steps ul {
+            list-style-type: none;
+            padding-left: 2.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .instruction-steps ul li {
+            border-bottom: none;
+            padding: 0.25rem 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .instructions-container {
+                flex-direction: column;
+                padding: 0 1rem;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #2563eb;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .map-link {
+            color: #2563eb;
+            margin-left: 0.1rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .map-link:hover {
+            color: #1d4ed8;
+        }
+
+        .check-section h3 svg {
+            vertical-align: middle;
+            margin-bottom: 2px;
+            color: #2563eb;
+        }
+
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .confirmation-modal.active {
+            display: flex;
+        }
+
+        .confirmation-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .confirmation-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .confirmation-header svg {
+            color: #eab308;
+            flex-shrink: 0;
+        }
+
+        .confirmation-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .confirmation-body {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .confirmation-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 0.75rem;
+            background-color: #f9fafb;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .confirmation-checkbox input {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .confirmation-checkbox label {
+            color: #374151;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .confirmation-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .confirmation-cancel {
+            background: none;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
+        }
+
+        .confirmation-cancel:hover {
+            background-color: #f3f4f6;
+        }
+
+        .confirmation-proceed {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+        }
+
+        .confirmation-proceed:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .confirmation-proceed:not(:disabled):hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Make it responsive */
+        @media (max-width: 900px) {
+            .checks-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="confirmation-modal" id="siblingConfirmationModal">
+        <div class="confirmation-content">
+            <div class="confirmation-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <div class="confirmation-title">Enable Potential Siblings Check</div>
+            </div>
+            <div class="confirmation-body">
+                This check attempts to identify potential siblings by matching parent information. However, please note
+                that this check is not 100% accurate as the reports do not explicitly specify sibling relationships.
+            </div>
+            <div class="confirmation-checkbox">
+                <input type="checkbox" id="siblingAcknowledgement">
+                <label for="siblingAcknowledgement">I acknowledge this option needs to be double checked</label>
+            </div>
+            <div class="confirmation-buttons">
+                <button class="confirmation-button confirmation-cancel" onclick="cancelSiblingCheck()">Cancel</button>
+                <button class="confirmation-button confirmation-proceed" id="proceedButton"
+                    onclick="proceedWithSiblingCheck()" disabled>Enable Check</button>
+            </div>
+        </div>
+    </div>
+
+    <noscript>
+        <div style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+        ">
+            <div style="
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-family: system-ui, -apple-system, sans-serif;
+          ">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="margin: 0 auto 1rem auto;">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <h2 style="
+              color: #111827;
+              font-size: 1.5rem;
+              margin-bottom: 1rem;
+            ">JavaScript Required</h2>
+                <p style="
+              color: #4b5563;
+              line-height: 1.5;
+              margin-bottom: 1rem;
+            ">This application requires JavaScript to function. Please enable JavaScript in your browser settings to
+                    continue.</p>
+                <p style="
+              color: #6b7280;
+              font-size: 0.875rem;
+            ">If you need assistance, please contact your on-site IT support team.</p>
+            </div>
+        </div>
+    </noscript>
+
+    <div class="container">
+        <header>
+            <h1>Student Validator v2.8.4b</h1>
+            <div class="header-controls">
+                <button id="settingsButton" class="settings-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z">
+                        </path>
+                    </svg>
+                    Settings
+                </button>
+                <div class="upload-areas">
+                    <div class="upload-area" id="csvUploadArea">
+                        <div>Drag & Drop CSV</div>
+                        <div style="font-size: 0.8em; margin-top: 0.5rem;">or click to upload</div>
+                    </div>
+                    <!-- A Paul Sharpe Creation -->
+                    <div class="upload-area" id="xmlUploadArea">
+                        <div>Drag & Drop XML</div>
+                        <div style="font-size: 0.8em; margin-top: 0.5rem;">or click to upload</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="student-list">
+                <div class="stats-section">
+                    <!-- Stats grid will be inserted here -->
+                </div>
+                <div class="students" id="studentsList">
+                    <!-- Student cards will be inserted here -->
+                </div>
+            </div>
+
+            <div class="student-details" id="studentDetails">
+                <div class="no-selection">
+                    <h2>Welcome!</h2>
+                    <p style="margin: 1rem 7rem;">
+                        This validator is designed to significantly reduce the amount of manual data checking required
+                        for the transition from Integris to Kaartdijin.
+                    </p>
+                    <p style="margin-bottom: 1rem; margin: 0rem 7rem">
+                        Using reports from SIS (only one is mandatory) this site will attempt to flag students and their
+                        contacts with the most common errors.
+                    </p>
+
+                    <div class="checks-container">
+                        <div class="check-section">
+                            <h3>Student Checks</h3>
+                            <ul>
+                                <li>Missing Form</li>
+                                <li>Missing Year</li>
+                                <li>Missing / Valid WASN</li>
+                                <li>Valid Address</li>
+                                <li>Content in Address Line 3 & 4</li>
+                                <li>Admissions Check (Future Entry Date)</li>
+                                <li>Check Medical Condition Severity</li>
+                                <li>Potential Sibling Mismatches</li>
+                            </ul>
+                        </div>
+
+                        <div class="check-section">
+                            <h3>Contacts Checks</h3>
+                            <ul>
+                                <li>Incomplete Name</li>
+                                <li>Invalid, duplicate or missing email</li>
+                                <li>Missing, duplicate or invalid mobile number</li>
+                                <li>Missing gender information (requires XML)</li>
+                                <li>Guardian address differs from student address</li>
+                            </ul>
+                        </div>
+
+                        <div class="check-section">
+                            <h3>Features [<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z">
+                                    </path>
+                                </svg>]</h3>
+                            <ul>
+                                <li>Medical: Show/hide medical details</li>
+                                <li>Colourful Mode: Colour-code student information</li>
+                                <li>Show Valid: Include/exclude students without issues</li>
+                                <li>WASN: Switch between WASN and SIS num</li>
+                                <li>Email MM: Email checks based on Mail Marker</li>
+                                <li>Student Resident: Only shows address mismatch for SRs</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="scroll-indicator" onclick="scrollToInstructions()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </div>
+
+                    <div class="instructions-section" id="instructions">
+                        <h2 class="instructions-title instructions-header">How to Generate the Reports</h2>
+                        <div class="instructions-container">
+                            <div class="instruction-section">
+                                <h3>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <line x1="16" y1="13" x2="8" y2="13" />
+                                        <line x1="16" y1="17" x2="8" y2="17" />
+                                        <line x1="10" y1="9" x2="8" y2="9" />
+                                    </svg>
+                                    Student Mail-merge (CSV)
+                                </h3>
+                                <div class="time-estimate">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
+                                    Takes 2 seconds per student (≈16min per 500)
+                                </div>
+                                <ol class="instruction-steps">
+                                    <li><span class="step-number">1.</span>In SIS open Student Details</li>
+                                    <li><span class="step-number">2.</span>Binoculars > click Find (don't change any
+                                        options here), then click Select</li>
+                                    <li><span class="step-number">2b.</span>(Optional) You can include Admissions
+                                        Students with Advanced Search</li>
+                                    <li><span class="step-number">3.</span>Click Yes in the warning (You'll see a red
+                                        dot in the top left of Student Details)</li>
+                                    <li><span class="step-number">4.</span>Click Send Letter > check "Produce a CSV file
+                                        for use in a subsequent mail-merge"</li>
+                                    <li><span class="step-number">5.</span>Name & Save this somewhere you can find it
+                                    </li>
+                                    <li><span class="step-number">6.</span>Wait. Once completed you can drag & drop the
+                                        report into the top right.</li>
+                                </ol>
+                            </div>
+
+                            <div class="instruction-section">
+                                <h3>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <line x1="16" y1="13" x2="8" y2="13" />
+                                        <line x1="16" y1="17" x2="8" y2="17" />
+                                        <polyline points="10 9 9 9 8 9" />
+                                    </svg>
+                                    Student Data XML Export (Optional)
+                                </h3>
+                                <div class="time-estimate">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg>
+                                    Required for gender validation
+                                </div>
+                                <ol class="instruction-steps">
+                                    <li><span class="step-number">1.</span>In SIS open Admin</li>
+                                    <li><span class="step-number">2.</span>Click Utilities, find "Student Details XML
+                                        Export" & double click to open it</li>
+                                    <li><span class="step-number">3.</span>Click Find Students, click Find (don't change
+                                        any options here), click Select</li>
+                                    <li><span class="step-number">3b.</span>(Optional) You can include Admissions
+                                        Students with Advanced Search</li>
+                                    <li><span class="step-number">4.</span>In the warning pop-up click yes</li>
+                                    <li><span class="step-number">5.</span>Click "Next >>", then click Export</li>
+                                    <li><span class="step-number">6.</span>Name & Save this somewhere you can find it
+                                    </li>
+                                    <li><span class="step-number">7.</span>Wait. Once completed you can drag & drop the
+                                        report into the top right.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <div class="settings-left">
+                <div class="settings-header">
+                    <div class="settings-title">Settings</div>
+                    <button class="settings-close" onclick="closeSettingsModal()">×</button>
+                </div>
+                <div class="settings-options">
+                    <div class="settings-option" data-setting="medical">
+                        <input type="checkbox" id="medicalToggle" onchange="toggleMedicalDetails()">
+                        <label for="medicalToggle">Medical</label>
+                    </div>
+                    <div class="settings-option" data-setting="colorful">
+                        <input type="checkbox" id="colorfulToggle" onchange="toggleColorfulMode()">
+                        <label for="colorfulToggle">Colourful</label>
+                    </div>
+                    <div class="settings-option" data-setting="showValid">
+                        <input type="checkbox" id="showValidToggle" onchange="toggleShowValid()">
+                        <label for="showValidToggle">Show Valid</label>
+                    </div>
+                    <div class="settings-option" data-setting="wasn">
+                        <input type="checkbox" id="wasnToggle" onchange="toggleWasn()">
+                        <label for="wasnToggle">WASN</label>
+                    </div>
+                    <div class="settings-option" data-setting="emailMM">
+                        <input type="checkbox" id="emailMMToggle" checked onchange="toggleEmailMM()">
+                        <label for="emailMMToggle">Email MM</label>
+                    </div>
+                    <div class="settings-option" data-setting="studentResident">
+                        <input type="checkbox" id="studentResidentToggle" checked onchange="toggleStudentResident()">
+                        <label for="studentResidentToggle">Student Resident</label>
+                    </div>
+                    <div class="settings-option" data-setting="potentialSiblings">
+                        <input type="checkbox" id="potentialSiblingsToggle" onchange="togglePotentialSiblings()">
+                        <label for="potentialSiblingsToggle">Potential Siblings</label>
+                    </div>
+                    <div class="settings-option" data-setting="viewYear12">
+                        <input type="checkbox" id="viewYear12Toggle" checked onchange="toggleViewYear12()">
+                        <label for="viewYear12Toggle">Show Year 12s</label>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-right">
+                <div id="settingDescription"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let students = [];
+        let xmlData = new Map();
+        let csvUploaded = false;
+        let xmlUploaded = false;
+        let showValidStudents = false;
+        let showMedicalNotes = false;
+
+        // Settings descriptions
+        const settingsInfo = {
+            medical: {
+                title: "Medical Information Display",
+                description: "Toggle the visibility of student medical information in the details view.</br></br> When enabled shows: doctor details, medical practice information, contact number, & medical conditions.</br></br> Additionally, to display Medical Condition Notes press the ~ key."
+            },
+            colorful: {
+                title: "Colourful Mode",
+                description: "Enable a colour-coded interface that helps distinguish between students. Useful when navigating with Arrow Keys.</br></br>  When enabled, applies a selection of colours to help differentiate between students."
+            },
+            showValid: {
+                title: "Show Valid Records",
+                description: "Include students with no validation errors or warnings in the list.</br></br> When enabled, shows students with data issues & those without."
+            },
+            wasn: {
+                title: "WASN Display",
+                description: "Toggle between displaying the WASN (WA Student Number) or SIS Number in the student list. Useful for comparing to systems other than SIS. </br></br>  When enabled, shows the WASN instead of SIS Number."
+            },
+            emailMM: {
+                title: "Email Validation",
+                description: "Toggles between strict email valdiation for all contacts, or email validation for Mail Marker contacts only. </br></br> When enabled (default), only checks parent contacts with Mail Marker (MM) have valid email addresses."
+            },
+            studentResident: {
+                title: "Student Resident Address",
+                description: "Controls how guardian address mismatches are assessed. </br></br> When enabled (default), only shows address mismatch warnings for parents marked as Student Resident (SR).</br></br> When disabled, shows address mismatch warnings for all guardians."
+            },
+            potentialSiblings: {
+                title: "Potential Siblings Check",
+                description: "Attempts to identify siblings, and any potential data inconsistencies.</br></br>When enabled, shows warnings for potential sibling matches and errors for mismatched details between siblings.</br></br>Sibling matches are determined by comparing parent names, contact details, and addresses."
+            },
+            viewYear12: {
+                title: "View Year 12 Students",
+                description: "Toggle the visibility of Year 12 students in the list.</br></br>When enabled (default), shows all students including Year 12s."
+            }
+        };
+
+        function scrollToInstructions() {
+            const container = document.querySelector('.no-selection');
+            const instructions = document.getElementById('instructions');
+
+            if (!container || !instructions) return;
+
+            // Calculate the scroll position
+            container.scrollTo({
+                top: instructions.offsetTop - 20, // 20px offset for spacing
+                behavior: 'smooth'
+            });
+        }
+
+        function saveSettings() {
+            const settings = {
+                medical: document.getElementById('medicalToggle').checked,
+                colorful: document.getElementById('colorfulToggle').checked,
+                showValid: document.getElementById('showValidToggle').checked,
+                wasn: document.getElementById('wasnToggle').checked,
+                emailMM: document.getElementById('emailMMToggle').checked,
+                studentResident: document.getElementById('studentResidentToggle').checked,
+                potentialSiblings: document.getElementById('potentialSiblingsToggle').checked,
+                viewYear12: document.getElementById('viewYear12Toggle').checked,
+                showMedicalNotes: showMedicalNotes,
+                savedAt: new Date().toLocaleString()
+            };
+            localStorage.setItem('studentValidatorSettings', JSON.stringify(settings));
+        }
+
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('studentValidatorSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+
+                // Apply each setting including the new Year 12 setting
+                document.getElementById('medicalToggle').checked = settings.medical;
+                document.getElementById('colorfulToggle').checked = settings.colorful;
+                document.getElementById('showValidToggle').checked = settings.showValid;
+                document.getElementById('wasnToggle').checked = settings.wasn;
+                document.getElementById('emailMMToggle').checked = settings.emailMM;
+                document.getElementById('studentResidentToggle').checked =
+                    settings.studentResident !== undefined ? settings.studentResident : true;
+                document.getElementById('potentialSiblingsToggle').checked =
+                    settings.potentialSiblings !== undefined ? settings.potentialSiblings : false;
+                document.getElementById('viewYear12Toggle').checked =
+                    settings.viewYear12 !== undefined ? settings.viewYear12 : true;
+
+                // Load medical notes state
+                showMedicalNotes = settings.showMedicalNotes || false;
+
+                // Apply the effects of each setting
+                toggleMedicalDetails();
+                toggleColorfulMode();
+                showValidStudents = settings.showValid;
+                filterStudents();
+
+                // Show notification
+                showNotification(`Previous settings loaded from ${settings.savedAt}`);
+            } else {
+                // If no saved settings, set defaults
+                document.getElementById('studentResidentToggle').checked = true;
+                document.getElementById('potentialSiblingsToggle').checked = false;
+                document.getElementById('viewYear12Toggle').checked = true;
+            }
+        }
+
+        function showNotification(message) {
+            // Remove any existing notification
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            // Create and add new notification
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>${message}</div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; color: white; cursor: pointer; margin-left: 1rem;">
+                ×
+            </button>
+        </div>
+    `;
+            document.body.appendChild(notification);
+
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 10);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        // Helper functions
+        function cleanValue(value) {
+            if (!value) return '';
+            return value.toString().replace(/['"]+/g, '').trim();
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function isValidLandlineNumber(phone) {
+            if (!phone) return false;
+
+            // Remove all spaces, dashes, and brackets
+            const cleaned = phone.toString().replace(/[\s\-\(\)]/g, '');
+
+            // Handle different Australian landline formats:
+            // +61 2 1234 5678
+            // 61 2 1234 5678
+            // 02 1234 5678
+            // (02) 1234 5678
+            // 1234 5678 (local number without area code)
+
+            if (cleaned.startsWith('+61')) {
+                // Format: +61 area_code number
+                return /^\+61[2378]\d{8}$/.test(cleaned);
+            } else if (cleaned.startsWith('61')) {
+                // Format: 61 area_code number
+                return /^61[2378]\d{8}$/.test(cleaned);
+            } else if (cleaned.startsWith('0')) {
+                // Format: 0area_code number
+                return /^0[2378]\d{8}$/.test(cleaned);
+            } else {
+                // Local number format (8 digits)
+                return /^\d{8}$/.test(cleaned);
+            }
+        }
+
+        // Helper function to get parent details for comparison
+        function getParentDetails(student, parentNum) {
+            return {
+                firstName: cleanValue(student[`ParFirstName${parentNum}`]),
+                surname: cleanValue(student[`ParSurname${parentNum}`]),
+                address: cleanValue(student[`ParAdd${parentNum}L1`]),
+                mobile: cleanValue(student[`ParMobile${parentNum}`]),
+                email: cleanValue(student[`ParEmail${parentNum}`])
+            };
+        }
+
+        // Helper function to count matching fields between two parents
+        function countMatchingFields(parent1, parent2) {
+            let matches = 0;
+            if (parent1.firstName && parent1.firstName === parent2.firstName) matches++;
+            if (parent1.surname && parent1.surname === parent2.surname) matches++;
+            if (parent1.address && parent1.address === parent2.address) matches++;
+            if (parent1.mobile && parent1.mobile === parent2.mobile) matches++;
+            if (parent1.email && parent1.email === parent2.email) matches++;
+            return matches;
+        }
+
+        // Helper function to check if addresses match exactly
+        function addressesMatchExactly(addr1, addr2) {
+            if (!addr1 || !addr2) return false;
+            return addr1.line1?.trim().toLowerCase() === addr2.line1?.trim().toLowerCase() &&
+                addr1.line2?.trim().toLowerCase() === addr2.line2?.trim().toLowerCase() &&
+                addr1.line3?.trim().toLowerCase() === addr2.line3?.trim().toLowerCase() &&
+                addr1.line4?.trim().toLowerCase() === addr2.line4?.trim().toLowerCase() &&
+                addr1.postcode?.trim() === addr2.postcode?.trim();
+        }
+
+        function validateSiblings(currentStudent, allStudents, validation) {
+            // Skip external students
+            if (isExternalStudent(currentStudent)) return;
+
+            let hasSiblingError = false;
+            let hasSiblingWarning = false;
+
+            allStudents.forEach(otherStudent => {
+                // Skip self comparison and external students
+                if (otherStudent.id === currentStudent.id || isExternalStudent(otherStudent)) return;
+
+                // Get parent details for both students
+                const currentParent1 = getParentDetails(currentStudent, '1');
+                const currentParent2 = getParentDetails(currentStudent, '2');
+                const otherParent1 = getParentDetails(otherStudent, '1');
+                const otherParent2 = getParentDetails(otherStudent, '2');
+
+                // Check for partial matches between any parent combinations
+                const combinations = [
+                    [currentParent1, otherParent1],
+                    [currentParent1, otherParent2],
+                    [currentParent2, otherParent1],
+                    [currentParent2, otherParent2]
+                ];
+
+                let hasPartialMatch = false;
+                combinations.forEach(([parent1, parent2]) => {
+                    const matchCount = countMatchingFields(parent1, parent2);
+                    if (matchCount >= 3) {
+                        hasPartialMatch = true;
+                    }
+                });
+
+                if (hasPartialMatch) {
+                    const otherStudentName = `${cleanValue(otherStudent.PreferredName || otherStudent.FirstName)} ${cleanValue(otherStudent.Surname)}`;
+                    hasSiblingWarning = true;
+
+                    // Compare addresses
+                    const currentAddress = {
+                        line1: currentStudent.StuAddL1,
+                        line2: currentStudent.StuAddL2,
+                        line3: currentStudent.StuAddL3,
+                        line4: currentStudent.StuAddL4,
+                        postcode: currentStudent.StuAddPostCode
+                    };
+
+                    const otherAddress = {
+                        line1: otherStudent.StuAddL1,
+                        line2: otherStudent.StuAddL2,
+                        line3: otherStudent.StuAddL3,
+                        line4: otherStudent.StuAddL4,
+                        postcode: otherStudent.StuAddPostCode
+                    };
+
+                    // Add detailed warning for the student view
+                    validation.warnings.push(`Sibling: Partial match with ${otherStudentName}`);
+
+                    // Check for mismatches
+                    let hasMismatch = false;
+                    if (!addressesMatchExactly(currentAddress, otherAddress)) {
+                        hasMismatch = true;
+                        validation.errors.push(`Sibling: Address mismatch with ${otherStudentName}`);
+                    }
+
+                    // Compare parent details for exact matches
+                    ['1', '2'].forEach(num => {
+                        const currentParentFields = {
+                            firstName: currentStudent[`ParFirstName${num}`],
+                            surname: currentStudent[`ParSurname${num}`],
+                            mobile: currentStudent[`ParMobile${num}`],
+                            email: currentStudent[`ParEmail${num}`],
+                            address: currentStudent[`ParAdd${num}L1`]
+                        };
+
+                        ['1', '2'].forEach(otherNum => {
+                            const otherParentFields = {
+                                firstName: otherStudent[`ParFirstName${otherNum}`],
+                                surname: otherStudent[`ParSurname${otherNum}`],
+                                mobile: otherStudent[`ParMobile${otherNum}`],
+                                email: otherStudent[`ParEmail${otherNum}`],
+                                address: otherStudent[`ParAdd${otherNum}L1`]
+                            };
+
+                            if (currentParentFields.firstName === otherParentFields.firstName &&
+                                currentParentFields.surname === otherParentFields.surname) {
+                                if (currentParentFields.mobile !== otherParentFields.mobile ||
+                                    currentParentFields.email !== otherParentFields.email ||
+                                    currentParentFields.address !== otherParentFields.address) {
+                                    hasMismatch = true;
+                                    validation.errors.push(`Sibling: Parent ${num} details mismatch with ${otherStudentName}`);
+                                }
+                            }
+                        });
+                    });
+
+                    if (hasMismatch) {
+                        hasSiblingError = true;
+                    }
+                }
+            });
+
+            // Add generic messages for the summary modal
+            if (hasSiblingError) {
+                validation.errors.push('Potential Sibling Mismatch');
+            }
+            if (hasSiblingWarning) {
+                validation.warnings.push('Potential Sibling Match');
+            }
+        }
+
+        // Modify the existing toggle function to show the confirmation modal
+        function togglePotentialSiblings() {
+            const toggle = document.getElementById('potentialSiblingsToggle');
+
+            if (toggle.checked) {
+                // If trying to enable, show confirmation modal first
+                toggle.checked = false; // Reset the toggle
+                document.getElementById('siblingConfirmationModal').classList.add('active');
+                document.getElementById('siblingAcknowledgement').checked = false;
+                document.getElementById('proceedButton').disabled = true;
+            } else {
+                // If disabling, proceed normally
+                applySiblingCheck(false);
+            }
+        }
+
+        // Add event listener for the acknowledgement checkbox
+        document.getElementById('siblingAcknowledgement')?.addEventListener('change', function () {
+            document.getElementById('proceedButton').disabled = !this.checked;
+        });
+
+        // Function to cancel the sibling check
+        function cancelSiblingCheck() {
+            document.getElementById('siblingConfirmationModal').classList.remove('active');
+            document.getElementById('potentialSiblingsToggle').checked = false;
+        }
+
+        // Function to proceed with enabling the sibling check
+        function proceedWithSiblingCheck() {
+            document.getElementById('siblingConfirmationModal').classList.remove('active');
+            document.getElementById('potentialSiblingsToggle').checked = true;
+            applySiblingCheck(true);
+        }
+
+        // Function to actually apply the sibling check changes
+        function applySiblingCheck(enabled) {
+            const currentStudentCard = document.querySelector('.student-card.active');
+            const currentStudentId = currentStudentCard?.dataset.id;
+
+            // Store current scroll position of the students list
+            const studentsList = document.getElementById('studentsList');
+            const scrollPosition = studentsList.scrollTop;
+
+            // Revalidate all students
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+
+            // Update the display
+            updateStats();
+            filterStudents();
+
+            if (currentStudentId) {
+                // Re-select the current student and show their updated details
+                const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                if (updatedCard) {
+                    updatedCard.classList.add('active');
+                    showStudentDetails(currentStudentId);
+
+                    // Make sure the card is visible
+                    updatedCard.scrollIntoView({ block: 'nearest' });
+                }
+
+                // Restore the original scroll position
+                studentsList.scrollTop = scrollPosition;
+            } else {
+                // If no student was selected, reset details view
+                document.getElementById('studentDetails').innerHTML = document.querySelector('.no-selection').outerHTML;
+            }
+
+            saveSettings();
+
+            // Show notification about the change
+            showNotification(`Potential sibling checks ${enabled ? 'enabled' : 'disabled'}`);
+        }
+
+        // Helper function for mobile validation
+        function isValidMobileNumber(mobile) {
+            if (!mobile) return false;
+            const cleaned = mobile.toString().replace(/[\s-]/g, '');
+
+            // Handle all valid Australian mobile formats
+            // +61412345678
+            // 61412345678
+            // 0412345678
+            if (cleaned.startsWith('+614')) {
+                return /^\+614\d{8}$/.test(cleaned);
+            } else if (cleaned.startsWith('614')) {
+                return /^614\d{8}$/.test(cleaned);
+            } else if (cleaned.startsWith('04')) {
+                return /^04\d{8}$/.test(cleaned);
+            }
+            return false;
+        }
+
+        function addressesMatch(addr1, addr2) {
+            if (!addr1 || !addr2) return false;
+            return addr1.line1?.trim().toLowerCase() === addr2.line1?.trim().toLowerCase() &&
+                addr1.line2?.trim().toLowerCase() === addr2.line2?.trim().toLowerCase() &&
+                addr1.postcode?.trim() === addr2.postcode?.trim();
+        }
+
+        function parseCSVLine(line) {
+            const values = [];
+            let currentValue = '';
+            let withinQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    if (withinQuotes && line[i + 1] === '"') {
+                        currentValue += '"';
+                        i++;
+                    } else {
+                        withinQuotes = !withinQuotes;
+                    }
+                } else if (char === ',' && !withinQuotes) {
+                    values.push(currentValue);
+                    currentValue = '';
+                } else {
+                    currentValue += char;
+                }
+            }
+
+            values.push(currentValue);
+            return values;
+        }
+
+        // Colors management
+        const colors = [
+            '#ffbe0b', '#fb5607', '#ff006e', '#8338ec', '#3a86ff',
+            '#8ac926', '#FF0000', '#000000', '#9d4edd', '#73d2de'
+        ];
+        let currentColorIndex = 0;
+        const studentColors = new Map();
+
+        function getNextColor() {
+            const color = colors[currentColorIndex];
+            currentColorIndex = (currentColorIndex + 1) % colors.length;
+            return color;
+        }
+
+        // Helper function to check if student is external
+        function isExternalStudent(student) {
+            const addressFields = [
+                student.StuAddL1,
+                student.StuAddL2,
+                student.StuAddL3,
+                student.StuAddL4
+            ];
+            return addressFields.some(field =>
+                field && field.toString().toUpperCase().includes('REFER TO')
+            );
+        }
+
+        function validateSiblings(currentStudent, allStudents, validation) {
+            // Skip external students
+            if (isExternalStudent(currentStudent)) return;
+
+            // Get siblings list first
+            const potentialSiblings = allStudents.filter(otherStudent => {
+                if (otherStudent.id === currentStudent.id || isExternalStudent(otherStudent)) return false;
+
+                const currentParent1 = getParentDetails(currentStudent, '1');
+                const currentParent2 = getParentDetails(currentStudent, '2');
+                const otherParent1 = getParentDetails(otherStudent, '1');
+                const otherParent2 = getParentDetails(otherStudent, '2');
+
+                const combinations = [
+                    [currentParent1, otherParent1],
+                    [currentParent1, otherParent2],
+                    [currentParent2, otherParent1],
+                    [currentParent2, otherParent2]
+                ];
+
+                return combinations.some(([parent1, parent2]) =>
+                    countMatchingFields(parent1, parent2) >= 3);
+            });
+
+            if (potentialSiblings.length > 0) {
+                // Add generic message only once
+                validation.warnings.push('Potential Sibling Match');
+
+                // Check each potential sibling for mismatches
+                potentialSiblings.forEach(sibling => {
+                    const siblingName = `${cleanValue(sibling.PreferredName || sibling.FirstName)} ${cleanValue(sibling.Surname)}`;
+                    validation.warnings.push(`Sibling: Partial match with ${siblingName}`);
+
+                    let hasMismatch = false;
+
+                    // Compare addresses
+                    const currentAddress = {
+                        line1: currentStudent.StuAddL1,
+                        line2: currentStudent.StuAddL2,
+                        line3: currentStudent.StuAddL3,
+                        line4: currentStudent.StuAddL4,
+                        postcode: currentStudent.StuAddPostCode
+                    };
+
+                    const siblingAddress = {
+                        line1: sibling.StuAddL1,
+                        line2: sibling.StuAddL2,
+                        line3: sibling.StuAddL3,
+                        line4: sibling.StuAddL4,
+                        postcode: sibling.StuAddPostCode
+                    };
+
+                    if (!addressesMatchExactly(currentAddress, siblingAddress)) {
+                        hasMismatch = true;
+                        validation.errors.push(`Sibling: Address mismatch with ${siblingName}`);
+                    }
+
+                    // Compare parent details
+                    ['1', '2'].forEach(num => {
+                        const currentParent = {
+                            firstName: currentStudent[`ParFirstName${num}`],
+                            surname: currentStudent[`ParSurname${num}`],
+                            mobile: currentStudent[`ParMobile${num}`],
+                            email: currentStudent[`ParEmail${num}`],
+                            address: currentStudent[`ParAdd${num}L1`]
+                        };
+
+                        ['1', '2'].forEach(siblingNum => {
+                            const siblingParent = {
+                                firstName: sibling[`ParFirstName${siblingNum}`],
+                                surname: sibling[`ParSurname${siblingNum}`],
+                                mobile: sibling[`ParMobile${siblingNum}`],
+                                email: sibling[`ParEmail${siblingNum}`],
+                                address: sibling[`ParAdd${siblingNum}L1`]
+                            };
+
+                            if (currentParent.firstName === siblingParent.firstName &&
+                                currentParent.surname === siblingParent.surname) {
+                                if (currentParent.mobile !== siblingParent.mobile ||
+                                    currentParent.email !== siblingParent.email ||
+                                    currentParent.address !== siblingParent.address) {
+                                    hasMismatch = true;
+                                    validation.errors.push(`Sibling: Parent ${num} details mismatch with ${siblingName}`);
+                                }
+                            }
+                        });
+                    });
+
+                    if (hasMismatch && !validation.errors.includes('Potential Sibling Mismatch')) {
+                        validation.errors.push('Potential Sibling Mismatch');
+                    }
+                });
+            }
+        }
+
+        function isResidentialCollege(student, prefix, num) {
+            const name = [
+                student[`${prefix}FirstName${num}`] || '',
+                student[`${prefix}Surname${num}`] || ''
+            ].join(' ').toLowerCase();
+
+            const address = [
+                student[`${prefix}Add${num}L1`] || '',
+                student[`${prefix}Add${num}L2`] || '',
+                student[`${prefix}Add${num}L3`] || '',
+                student[`${prefix}Add${num}L4`] || ''
+            ].join(' ').toLowerCase();
+
+            return name.includes('residential college') ||
+                name.includes('erc') ||
+                address.includes('residential college') ||
+                address.includes('erc');
+        }
+
+        function isDuplicateContact(student, conNumber) {
+            const conFirstName = cleanValue(student[`ConFirstName${conNumber}`]);
+            const conSurname = cleanValue(student[`ConSurname${conNumber}`]);
+            const conMobile = cleanValue(student[`ConMobile${conNumber}`]);
+
+            for (let parNumber of ['1', '2']) {
+                const parFirstName = cleanValue(student[`ParFirstName${parNumber}`]);
+                const parSurname = cleanValue(student[`ParSurname${parNumber}`]);
+                const parMobile = cleanValue(student[`ParMobile${parNumber}`]);
+
+                if (parFirstName && parSurname &&
+                    parFirstName.toLowerCase() === conFirstName.toLowerCase() &&
+                    parSurname.toLowerCase() === conSurname.toLowerCase() &&
+                    parMobile === conMobile) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function validateContacts(student, xmlContacts, validation) {
+            const checkEmails = document.getElementById('emailMMToggle').checked;
+
+            // Check for duplicate emails and mobile numbers within this student's parents
+            const parentEmails = new Set();
+            const duplicateEmails = new Set();
+            const parentMobiles = new Set();
+            const duplicateMobiles = new Set();
+
+            ['1', '2'].forEach(num => {
+                const email = student[`ParEmail${num}`];
+                const mobile = student[`ParMobile${num}`];
+
+                // Track duplicate emails
+                if (email && email.trim()) {
+                    if (parentEmails.has(email.toLowerCase())) {
+                        duplicateEmails.add(email.toLowerCase());
+                    } else {
+                        parentEmails.add(email.toLowerCase());
+                    }
+                }
+
+                // Track duplicate mobiles
+                if (mobile && mobile.trim()) {
+                    const cleanedMobile = mobile.toString().replace(/[\s-]/g, '')
+                        .replace(/^\+61/, '0')
+                        .replace(/^61/, '0');
+                    if (parentMobiles.has(cleanedMobile)) {
+                        duplicateMobiles.add(cleanedMobile);
+                    } else {
+                        parentMobiles.add(cleanedMobile);
+                    }
+                }
+            });
+
+            // Validate Parent/Guardian contacts
+            ['Par'].forEach((prefix) => {
+                ['1', '2'].forEach((num) => {
+                    const firstName = student[`${prefix}FirstName${num}`];
+                    const surname = student[`${prefix}Surname${num}`];
+                    const email = student[`${prefix}Email${num}`];
+                    const mobile = student[`${prefix}Mobile${num}`];
+                    const phone = student[`${prefix}Phone${num}T1`];
+
+                    if (firstName || surname) {
+                        if (isResidentialCollege(student, prefix, num)) {
+                            validation.errors.push(`Parent ${num}: Residential College can't be a contact`);
+                            return;
+                        }
+
+                        if (!firstName || firstName.trim() === '') {
+                            validation.errors.push(`Parent ${num}: Missing First Name`);
+                        }
+                        if (!surname || surname.trim() === '') {
+                            validation.errors.push(`Parent ${num}: Missing Surname`);
+                        }
+
+                        // Email validation
+                        const fmmIsYes = student[`ParFMM${num}`] === 'YES';
+                        if (checkEmails) {
+                            if (fmmIsYes && (!email || !isValidEmail(email))) {
+                                validation.errors.push(`Parent ${num}: Invalid or missing email`);
+                            }
+                        } else {
+                            if (!email || !isValidEmail(email)) {
+                                validation.errors.push(`Parent ${num}: Invalid or missing email`);
+                            }
+                        }
+
+                        if (email && email.trim() && duplicateEmails.has(email.toLowerCase())) {
+                            validation.errors.push(`Parent ${num}: Duplicate email. Unique email required.`);
+                        }
+
+                        // Phone number validation
+                        if (phone && phone.trim() !== '') {
+                            const cleaned = phone.toString().replace(/[\s-]/g, '');
+                            if (cleaned.toString().match(/^(\+?(61)|0)?4/)) {
+                                validation.warnings.push(`Parent ${num}: Mobile number in phone field`);
+                            } else if (!isValidLandlineNumber(phone)) {
+                                validation.errors.push(`Parent ${num}: Invalid phone number`);
+                            }
+                        }
+
+                        // Mobile validation
+                        if (!mobile || mobile.trim() === '') {
+                            validation.errors.push(`Parent ${num}: Missing mobile number`);
+                        } else {
+                            const cleanedMobile = mobile.toString().replace(/[\s-]/g, '')
+                                .replace(/^\+61/, '0')
+                                .replace(/^61/, '0');
+
+                            if (duplicateMobiles.has(cleanedMobile)) {
+                                validation.errors.push(`Parent ${num}: Mobile number already used by another parent`);
+                            } else if (!isValidMobileNumber(mobile)) {
+                                validation.errors.push(`Parent ${num}: Invalid mobile number (non-Australia)`);
+                            }
+                        }
+
+                        if (xmlUploaded) {
+                            const contacts = xmlContacts?.get(student['CC No.']);
+                            const contact = contacts?.find(c => c.relLnkParentNo === num);
+                            if (!contact || !contact.gender || !contact.gender.trim()) {
+                                validation.errors.push(`Parent ${num}: Missing gender information`);
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Emergency Contacts validation
+            ['1', '2', '3'].forEach((num) => {
+                const firstName = student[`ConFirstName${num}`];
+                const surname = student[`ConSurname${num}`];
+                const mobile = student[`ConMobile${num}`];
+                const phone = student[`ConPhone${num}T1`];
+
+                if ((firstName || surname) && !isDuplicateContact(student, num)) {
+                    if (isResidentialCollege(student, 'Con', num)) {
+                        validation.errors.push(`Contact ${num}: Residential College can't be a contact`);
+                        return;
+                    }
+
+                    if (!firstName || firstName.trim() === '') {
+                        validation.errors.push(`Contact ${num}: Missing First Name`);
+                    }
+                    if (!surname || surname.trim() === '') {
+                        validation.errors.push(`Contact ${num}: Missing Surname`);
+                    }
+
+                    const hasMobile = mobile && isValidMobileNumber(mobile);
+                    const hasValidPhone = phone && isValidLandlineNumber(phone);
+
+                    if (!hasMobile && !hasValidPhone) {
+                        validation.errors.push(`Contact ${num}: Must have either a valid mobile or landline number`);
+                    } else {
+                        if (mobile && mobile.trim() !== '' && !isValidMobileNumber(mobile)) {
+                            const cleaned = mobile.toString().replace(/[\s-]/g, '');
+                            if (!cleaned.toString().match(/^(\+?(61)|0)?4/)) {
+                                validation.warnings.push(`Contact ${num}: Invalid mobile (Non-Australian)`);
+                            } else if (cleaned.replace(/^\+?(61|0)/, '').length !== 9) {
+                                validation.warnings.push(`Contact ${num}: Invalid mobile (Length)`);
+                            } else {
+                                validation.warnings.push(`Contact ${num}: Invalid mobile number format`);
+                            }
+                        }
+
+                        if (phone && phone.trim() !== '') {
+                            const cleaned = phone.toString().replace(/[\s-]/g, '');
+                            if (cleaned.toString().match(/^(\+?(61)|0)?4/)) {
+                                validation.warnings.push(`Contact ${num}: Mobile number in phone field`);
+                            } else if (!isValidLandlineNumber(phone)) {
+                                validation.errors.push(`Contact ${num}: Invalid phone number`);
+                            }
+                        }
+                    }
+
+                    if (xmlUploaded) {
+                        const contacts = xmlContacts?.get(student['CC No.']);
+                        const contact = contacts?.find(c => c.order === num);
+                        if (!contact || !contact.gender || !contact.gender.trim()) {
+                            validation.errors.push(`Contact ${num}: Missing gender information`);
+                        }
+                    }
+                }
+            });
+        }
+
+        function validateAddress(type, address, validation) {
+            const errorPrefix = type === 'Student' ? 'Student Address' : type;
+
+            if (!address.line1) {
+                validation.errors.push(`${errorPrefix}: Missing street address`);
+                return;
+            }
+
+            const addressLine = address.line1.trim().toLowerCase();
+
+            // Check for c/o addresses
+            if (addressLine.startsWith('c/o') || addressLine.startsWith('c/- ') || addressLine.startsWith('care of')) {
+                validation.errors.push(`${errorPrefix}: Not a valid street address`);
+                return;
+            }
+
+            // Early returns for special cases
+            if (/^rmb\s*\d+/.test(addressLine)) {
+                return;
+            }
+
+            if (type === 'Student' && addressLine.includes('esperance residential college')) {
+                validation.warnings.push(`${errorPrefix}: Not a valid address`);
+                return;
+            }
+
+            // Check for PO Box addresses
+            if (addressLine.includes('po box') || addressLine.includes('p.o. box')) {
+                validation.errors.push(`${errorPrefix}: PO Box not allowed`);
+                return;
+            }
+
+            // Check for Lot and Loc addresses
+            if (addressLine.startsWith('lot') || addressLine.startsWith('loc ') || /^loc\d/.test(addressLine)) {
+                validation.errors.push(`${errorPrefix}: Location numbers not allowed`);
+                return;
+            }
+
+            // Enhanced street number detection
+            const hasStreetNumber = (
+                // Standard street numbers (e.g., "123 Smith St")
+                /^\d+[a-z]?\s/.test(addressLine) ||
+                /\s\d+[a-z]?\s/.test(addressLine) ||
+                // Unit/apartment numbers with street numbers (e.g., "Unit 2,34" or "Unit 2/34")
+                /^unit\s+\d+[\s,/]+\d+/.test(addressLine) ||
+                // Apartment style numbers (e.g., "2/34" or "2-34")
+                /^\d+[/\-]\d+/.test(addressLine) ||
+                // Multiple unit separators (e.g., "Unit 2,34" or "Flat 2/34")
+                /(unit|flat|apt|apartment)\s+\d+[\s,/-]+\d+/.test(addressLine)
+            );
+
+            if (!hasStreetNumber) {
+                validation.errors.push(`${errorPrefix}: Missing street number`);
+            }
+
+            if (address.line3 && address.line3.trim() !== '') {
+                validation.warnings.push(`${errorPrefix}: Contains data in Line 3`);
+            }
+            if (address.line4 && address.line4.trim() !== '') {
+                validation.warnings.push(`${errorPrefix}: Contains data in Line 4`);
+            }
+        }
+
+        // Add this function to render sibling information
+        function renderSiblingSection(student, validation) {
+            // Filter out sibling-related messages
+            const siblingWarnings = validation.warnings.filter(w => w.startsWith('Sibling:'));
+            const siblingErrors = validation.errors.filter(e => e.startsWith('Sibling:'));
+
+            // Don't show section if no sibling matches
+            if (siblingWarnings.length === 0 && siblingErrors.length === 0) {
+                return '';
+            }
+
+            // Group messages by sibling name
+            const siblingMessages = new Map(); // Map of sibling name to their messages
+
+            // Process warnings first (potential matches)
+            siblingWarnings.forEach(warning => {
+                if (warning === 'Potential Sibling Match') return; // Skip generic message
+                const match = warning.match(/Partial match with (.*)/);
+                if (match) {
+                    const siblingName = match[1];
+                    if (!siblingMessages.has(siblingName)) {
+                        siblingMessages.set(siblingName, {
+                            warnings: [],
+                            errors: []
+                        });
+                    }
+                    siblingMessages.get(siblingName).warnings.push('Potential sibling match detected');
+                }
+            });
+
+            // Process errors (mismatches)
+            siblingErrors.forEach(error => {
+                if (error === 'Potential Sibling Mismatch') return; // Skip generic message
+                const match = error.match(/(.*) with (.*)/);
+                if (match) {
+                    const issue = match[1];
+                    const siblingName = match[2];
+                    if (!siblingMessages.has(siblingName)) {
+                        siblingMessages.set(siblingName, {
+                            warnings: [],
+                            errors: []
+                        });
+                    }
+                    siblingMessages.get(siblingName).errors.push(issue);
+                }
+            });
+
+            // Generate HTML for each sibling
+            const siblingsHTML = Array.from(siblingMessages.entries()).map(([siblingName, messages]) => `
+        <div class="detail-section ${messages.errors.length > 0 ? 'error-highlight' : 'warning-highlight'}">
+            <h3>Potential Sibling: ${siblingName}</h3>
+            ${messages.warnings.map(warning => `
+                <div class="warning-text">⚠️ ${warning}</div>
+            `).join('')}
+            ${messages.errors.map(error => `
+                <div class="error-text">❌ ${error}</div>
+            `).join('')}
+        </div>
+    `).join('');
+
+            return `
+        <div class="full-width">
+            ${siblingsHTML}
+        </div>
+    `;
+        }
+
+        function validateAddresses(student, validation) {
+            validateAddress('Student', {
+                line1: student.StuAddL1,
+                line2: student.StuAddL2,
+                line3: student.StuAddL3,
+                line4: student.StuAddL4,
+                postcode: student.StuAddPostCode
+            }, validation);
+
+            const studentResidentCheck = document.getElementById('studentResidentToggle').checked;
+
+            ['1', '2'].forEach(num => {
+                if (student[`ParAdd${num}L1`]) {
+                    const parentAddress = {
+                        line1: student[`ParAdd${num}L1`],
+                        line2: student[`ParAdd${num}L2`],
+                        line3: student[`ParAdd${num}L3`],
+                        line4: student[`ParAdd${num}L4`],
+                        postcode: student[`ParAdd${num}PostCode`]
+                    };
+
+                    validateAddress(`Parent ${num}`, parentAddress, validation);
+
+                    if (student[`ParResp${num}`] === 'YES') {
+                        // Only check address match if studentResident setting is off OR if ParSR is YES
+                        if (!studentResidentCheck || student[`ParSR${num}`] === 'YES') {
+                            const studentAddress = {
+                                line1: student.StuAddL1,
+                                line2: student.StuAddL2,
+                                postcode: student.StuAddPostCode
+                            };
+
+                            if (!addressesMatch(studentAddress, parentAddress)) {
+                                validation.warnings.push(`Parent ${num}: Guardian address differs from student address`);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showStudentDetails(studentId) {
+            document.querySelectorAll('.student-card').forEach(card =>
+                card.classList.remove('active'));
+
+            document.querySelector(`.student-card[data-id="${studentId}"]`)?.classList.add('active');
+
+            const student = students.find(s => s.id === parseInt(studentId));
+            if (!student) return;
+
+            const validation = student.validation;
+            const studentDetails = document.getElementById('studentDetails');
+
+            // Helper function to check if date is in the future
+            function isDateInFuture(dateString) {
+                if (!dateString) return false;
+                const entryDate = new Date(dateString);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                entryDate.setHours(0, 0, 0, 0);
+                return entryDate > today;
+            }
+
+            function hasReferToInAddress(student) {
+                const addressFields = [
+                    student.StuAddL1,
+                    student.StuAddL2,
+                    student.StuAddL3,
+                    student.StuAddL4
+                ];
+                return addressFields.some(field =>
+                    field && field.toString().toUpperCase().includes('REFER TO')
+                );
+            }
+
+            const admissionsTag = isDateInFuture(student.EntryDate) ?
+                `<span class="relationship-tag" style="background-color: #e0f2fe; color: #0369a1;">Admissions</span>` :
+                '';
+
+            const externalTag = hasReferToInAddress(student) ?
+                `<span class="relationship-tag" style="background-color: #f1f5f9; color: #475569;">External</span>` :
+                '';
+
+            let detailsHTML = `
+        <div class="details-grid">
+            <div class="detail-section ${getValidationClass(validation, 'Student')}">
+                <h3>Personal Information ${admissionsTag} ${externalTag}</h3>
+                <div class="detail-row">
+                    <div class="detail-label">Name:</div>
+                    <div>${cleanValue(student.PreferredName || student.FirstName)} ${cleanValue(student.Surname)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Legal Surname:</div>
+                    <div>${cleanValue(student.LegalSurname)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">DOB:</div>
+                    <div>${cleanValue(student.DOB)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Gender:</div>
+                    <div>${cleanValue(student.StuGender)}</div>
+                </div>
+                ${renderValidationMessages(validation, 'Student')}
+            </div>
+
+            <div class="detail-section ${getValidationClass(validation, 'School')}">
+                <h3>School Information</h3>
+                <div class="detail-row ${!student.Form ? 'error-highlight' : ''}">
+                    <div class="detail-label">Form:</div>
+                    <div>${cleanValue(student.Form)}</div>
+                </div>
+                <div class="detail-row ${!student.Year ? 'error-highlight' : ''}">
+                    <div class="detail-label">Year:</div>
+                    <div>${cleanValue(student.Year)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">House:</div>
+                    <div>${cleanValue(student.House)}</div>
+                </div>
+                <div class="detail-row ${!student['CC No.'] ? 'error-highlight' : ''}">
+                    <div class="detail-label">WASN:</div>
+                    <div>${cleanValue(student['CC No.'])}</div>
+                </div>
+                ${renderValidationMessages(validation, 'School')}
+            </div>
+
+            <div class="detail-section full-width ${getValidationClass(validation, 'Student Address')}">
+                <h3>Student Contact Information</h3>
+                <div class="detail-row">
+                    <div class="detail-label">Email:</div>
+                    <div>${cleanValue(student.EMail)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Address:</div>
+                    <div>${formatAddress({
+                line1: student.StuAddL1,
+                line2: student.StuAddL2,
+                line3: student.StuAddL3,
+                line4: student.StuAddL4,
+                town: student.StuAddTown,
+                state: student.StuAddState,
+                postcode: student.StuAddPostCode
+            })}</div>
+                </div>
+                ${renderValidationMessages(validation, 'Student Address')}
+            </div>
+                ${document.getElementById('potentialSiblingsToggle')?.checked ?
+                    renderSiblingSection(student, validation) : ''}
+
+
+            <div class="contacts-grid full-width">
+                ${['1', '2'].map(num => renderContactSection(student, 'Par', num, 'Parent/Guardian', validation)).filter(Boolean).join('')}
+                ${['1', '2', '3'].map(num => {
+                        const hasData = student[`ConFirstName${num}`] || student[`ConSurname${num}`];
+                        return (hasData && !isDuplicateContact(student, num)) ?
+                            renderContactSection(student, 'Con', num, 'Emergency Contact', validation) : '';
+                    }).filter(Boolean).join('')}
+            </div>
+
+            <div class="medical-details detail-section full-width">
+    <h3>Medical Information</h3>
+    <div class="detail-row">
+        <div class="detail-label">Doctor:</div>
+        <div>${cleanValue(student.MedPract)}</div>
+    </div>
+    <div class="detail-row">
+        <div class="detail-label">Practice:</div>
+        <div>${cleanValue(student.PractAdd)}</div>
+    </div>
+    <div class="detail-row">
+        <div class="detail-label">Phone:</div>
+        <div>${cleanValue(student.PractTel1)}</div>
+    </div>
+
+    ${(() => {
+                    // Find all medical conditions
+                    const conditions = [];
+                    for (let i = 1; i <= 9; i++) {
+                        const condition = student[`MedCon${i}`];
+                        const notes = student[`MedCon${i}Notes`];
+                        const flagged = student[`MedCon${i}Flagged`];
+
+                        if (condition || notes || flagged) {
+                            conditions.push({
+                                condition,
+                                notes,
+                                flagged,
+                                index: i,
+                                willSync: condition?.startsWith('**')
+                            });
+                        }
+                    }
+
+                    if (conditions.length === 0) return '';
+
+                    return `
+            <h4 class="condition-header">Medical Conditions</h4>
+            ${conditions.map((cond) => `
+<div class="detail-row ${cond.flagged === 'YES' ? 'medical-condition attention' : 'medical-condition'} 
+     ${!cond.willSync ? 'warning-highlight' : ''}">
+    <div class="condition-content">
+        <div class="detail-label">Condition ${cond.index}:</div>
+        <div class="condition-info">
+            <div class="condition-value">
+                ${cleanValue(cond.condition)}
+                ${cond.flagged === 'YES' ? `
+                    <span class="condition-alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        Requires Attention
+                    </span>` :
+                            ''}
+            </div>
+            ${cond.notes ? `
+                <div class="condition-notes">
+                    ${cleanValue(cond.notes)}
+                </div>
+            ` : ''}
+        </div>
+        ${!cond.willSync ? `
+            <div class="warning-text">⚠️ Conditions without '**' will not sync</div>
+        ` : ''}
+    </div>
+</div>
+            `).join('')}
+        `;
+                })()}
+</div>
+        </div>
+    `;
+
+            studentDetails.innerHTML = detailsHTML;
+            refreshColors(studentId);
+
+            const medicalSection = document.querySelector('.medical-details');
+            if (medicalSection) {
+                medicalSection.classList.toggle('visible', document.getElementById('medicalToggle').checked);
+                if (showMedicalNotes) {
+                    medicalSection.classList.add('show-medical-notes');
+                } else {
+                    medicalSection.classList.remove('show-medical-notes');
+                }
+            }
+        }
+
+        // File handling
+        function handleCSVFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const rows = text.split(/\r?\n/);
+                const headers = parseCSVLine(rows[0]).map(h => cleanValue(h));
+
+                students = rows.slice(1)
+                    .filter(row => row.trim())
+                    .map((row, index) => {
+                        const values = parseCSVLine(row).map(v => cleanValue(v));
+                        const student = {
+                            id: index + 1,
+                            validation: { errors: [], warnings: [] }
+                        };
+                        headers.forEach((header, i) => {
+                            student[header] = values[i] || '';
+                        });
+                        return student;
+                    });
+
+                students.forEach(student => {
+                    student.validation = validateStudent(student, xmlData);
+                });
+
+                csvUploaded = true;
+                updateUploadAreas();
+                updateStats();
+                filterStudents();
+            };
+            reader.readAsText(file);
+        }
+
+        function handleXMLFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const activeCard = document.querySelector('.student-card.active');
+                const currentStudentId = activeCard ? activeCard.dataset.id : null;
+
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+                const pupils = xmlDoc.getElementsByTagName("Pupil");
+
+                xmlData.clear();
+
+                Array.from(pupils).forEach(pupil => {
+                    const ccNumber = pupil.querySelector("StudentDetails CCNumber")?.textContent;
+                    const contacts = Array.from(pupil.getElementsByTagName("Contact")).map(contact => ({
+                        order: contact.querySelector("Order")?.textContent,
+                        relLnkParentNo: contact.querySelector("RelLnkParentNo")?.textContent,
+                        gender: contact.querySelector("Gender")?.textContent || '',
+                        relationship: contact.querySelector("Relationship")?.textContent
+                    }));
+
+                    if (ccNumber) {
+                        xmlData.set(ccNumber, contacts);
+                    }
+                });
+
+                xmlUploaded = true;
+                students.forEach(student => {
+                    student.validation = validateStudent(student, xmlData);
+                });
+
+                updateUploadAreas();
+                updateStats();
+                filterStudents();
+
+                if (currentStudentId) {
+                    showStudentDetails(currentStudentId);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // UI update functions
+        function updateUploadAreas() {
+            const csvArea = document.getElementById('csvUploadArea');
+            const xmlArea = document.getElementById('xmlUploadArea');
+
+            if (csvUploaded) {
+                csvArea.classList.add('success');
+                csvArea.innerHTML = `
+            <div class="file-status">✓</div>
+            <div>CSV Uploaded</div>
+            <div style="font-size: 0.8em; margin-top: 0.5rem;">Drop to replace</div>
+        `;
+            }
+
+            if (!csvUploaded) {
+                xmlArea.classList.add('disabled');
+                xmlArea.innerHTML = `
+            <div>Upload CSV First</div>
+            <div style="font-size: 0.8em; margin-top: 0.5rem;">CSV required first</div>
+        `;
+            } else if (xmlUploaded) {
+                xmlArea.classList.remove('disabled');
+                xmlArea.classList.add('success');
+                xmlArea.innerHTML = `
+            <div class="file-status">✓</div>
+            <div>XML Uploaded</div>
+            <div style="font-size: 0.8em; margin-top: 0.5rem;">Drop to replace</div>
+        `;
+            } else {
+                xmlArea.classList.remove('disabled');
+                xmlArea.innerHTML = `
+            <div>Drag & Drop XML</div>
+            <div style="font-size: 0.8em; margin-top: 0.5rem;">or click to upload</div>
+        `;
+            }
+        }
+
+        function updateStats() {
+            const medicalVisible = document.getElementById('medicalToggle').checked;
+            const viewYear12 = document.getElementById('viewYear12Toggle').checked;
+
+            // Count total applicable students
+            const totalStudents = students.filter(student =>
+                viewYear12 || student.Year !== '12'
+            ).length;
+
+            // Get the error and warning summaries
+            const errorSummary = getErrorSummary();
+            const warningSummary = getWarningSummary();
+
+            // Calculate total errors and warnings
+            const totalErrors = Object.values(errorSummary).reduce((a, b) => a + b, 0);
+            const totalWarnings = Object.values(warningSummary).reduce((a, b) => a + b, 0);
+
+            // Count students with issues
+            const studentsWithIssues = students.filter(s => {
+                // Skip Year 12 students if hidden
+                if (!viewYear12 && s.Year === '12') {
+                    return false;
+                }
+
+                const relevantErrors = s.validation.errors.filter(error => {
+                    if (!medicalVisible && error.startsWith('Medical:')) return false;
+                    if (error.startsWith('Contact')) {
+                        const contactNum = error.charAt(8);
+                        return !isDuplicateContact(s, contactNum);
+                    }
+                    if (error.startsWith('Sibling:')) {
+                        return error === 'Potential Sibling Mismatch';
+                    }
+                    return true;
+                });
+
+                const relevantWarnings = s.validation.warnings.filter(warning => {
+                    if (!medicalVisible && warning.startsWith('Medical:')) return false;
+                    if (warning.startsWith('Contact')) {
+                        const contactNum = warning.charAt(8);
+                        return !isDuplicateContact(s, contactNum);
+                    }
+                    if (warning.startsWith('Sibling:')) {
+                        return warning === 'Potential Sibling Match';
+                    }
+                    return true;
+                });
+
+                return relevantErrors.length > 0 || relevantWarnings.length > 0;
+            }).length;
+
+            const statsSection = document.querySelector('.stats-section');
+            if (statsSection) {
+                statsSection.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-box student-errors">
+                    <div class="stat-number">${studentsWithIssues}/${totalStudents}</div>
+                    <div class="stat-label">Students with Data Issues</div>
+                </div>
+                <div class="stat-box error clickable" onclick="showSummaryModal('error')">
+                    <div class="info-icon">i</div>
+                    <div class="stat-number">${totalErrors}</div>
+                    <div class="stat-label">Total Errors</div>
+                </div>
+                <div class="stat-box warning clickable" onclick="showSummaryModal('warning')">
+                    <div class="info-icon">i</div>
+                    <div class="stat-number">${totalWarnings}</div>
+                    <div class="stat-label">Total Warnings</div>
+                </div>
+            </div>
+        `;
+            }
+        }
+
+        function filterStudents() {
+            const medicalVisible = document.getElementById('medicalToggle').checked;
+            const viewYear12 = document.getElementById('viewYear12Toggle').checked;
+
+            const filtered = students.filter(student => {
+                // First check Year 12 filter
+                if (!viewYear12 && student.Year === '12') {
+                    return false;
+                }
+
+                if (!showValidStudents) {
+                    // Get relevant errors and warnings based on medical visibility
+                    const relevantErrors = student.validation.errors.filter(error => {
+                        if (!medicalVisible && error.startsWith('Medical:')) {
+                            return false;
+                        }
+                        if (error.startsWith('Contact')) {
+                            const contactNum = error.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        return true;
+                    });
+
+                    const relevantWarnings = student.validation.warnings.filter(warning => {
+                        if (!medicalVisible && warning.startsWith('Medical:')) {
+                            return false;
+                        }
+                        if (warning.startsWith('Contact')) {
+                            const contactNum = warning.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        return true;
+                    });
+
+                    // Only show students with remaining errors or warnings
+                    if (relevantErrors.length === 0 && relevantWarnings.length === 0) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            updateStats();
+            renderStudents(filtered);
+        }
+
+
+        function renderStudents(filteredStudents = students) {
+            const showWasn = document.getElementById('wasnToggle').checked;
+            const medicalVisible = document.getElementById('medicalToggle').checked;
+            const studentsList = document.getElementById('studentsList');
+
+            studentsList.innerHTML = filteredStudents.map(student => {
+                const relevantErrors = student.validation.errors.filter(error => {
+                    if (!medicalVisible && error.startsWith('Medical:')) return false;
+                    if (error.startsWith('Contact')) {
+                        const contactNum = error.charAt(8);
+                        return !isDuplicateContact(student, contactNum);
+                    }
+                    return true;
+                });
+
+                const relevantWarnings = student.validation.warnings.filter(warning => {
+                    if (!medicalVisible && warning.startsWith('Medical:')) return false;
+                    if (warning.startsWith('Contact')) {
+                        const contactNum = warning.charAt(8);
+                        return !isDuplicateContact(student, contactNum);
+                    }
+                    return true;
+                });
+
+                return `
+            <div class="student-card ${relevantErrors.length ? 'error-highlight' :
+                        relevantWarnings.length ? 'warning-highlight' : ''}" 
+                 data-id="${student.id}">
+                <div><strong>${cleanValue(student.PreferredName || student.FirstName)} ${cleanValue(student.Surname)}</strong></div>
+                <div>${showWasn ? 'WASN: ' + cleanValue(student['CC No.']) : 'SIS Num: ' + cleanValue(student.Reference)}</div>
+                <div style="color: #6b7280; font-size: 0.9em;">Year ${cleanValue(student.Year)} - ${cleanValue(student.Form)}</div>
+                ${relevantErrors.length || relevantWarnings.length ? `
+                    <div class="validation-message">
+                        ${relevantErrors.length ?
+                            `<span class="validation-error">❌ ${relevantErrors.length} errors</span>` :
+                            `<span class="validation-warning">⚠️ ${relevantWarnings.length} warnings</span>`}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+            }).join('');
+
+            document.querySelectorAll('.student-card').forEach(card => {
+                card.addEventListener('click', () => showStudentDetails(card.dataset.id));
+            });
+        }
+
+        function formatAddress(address, includeMapLink = true) {
+            const formattedAddress = Object.entries(address)
+                .filter(([key, value]) => value && typeof value === 'string' && value.trim() !== '')
+                .map(([key, value]) => cleanValue(value))
+                .join(', ');
+
+            if (!formattedAddress) return '';
+
+            if (!includeMapLink) return formattedAddress;
+
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formattedAddress)}`;
+
+            return `
+        ${formattedAddress}
+        <a href="${mapUrl}" 
+           class="map-link" 
+           target="_blank" 
+           title="Open in Google Maps">
+            <svg xmlns="http://www.w3.org/2000/svg" 
+                 width="16" 
+                 height="16" 
+                 viewBox="0 0 24 24" 
+                 fill="none" 
+                 stroke="currentColor" 
+                 stroke-width="2" 
+                 stroke-linecap="round" 
+                 stroke-linejoin="round">
+                <circle cx="12" cy="10" r="3"/>
+                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"/>
+            </svg>
+        </a>
+    `;
+        }
+
+        function renderContactDetails(student, prefix, number) {
+            const phone = student[`${prefix}Phone${number}T1`];
+            const mobile = student[`${prefix}Mobile${number}`];
+            const email = student[`${prefix}Email${number}`];
+
+            const details = [];
+
+            if (phone) {
+                details.push(`
+            <div class="detail-row">
+                <div class="detail-label">Phone:</div>
+                <div>${cleanValue(phone)}</div>
+            </div>
+        `);
+            }
+
+            if (mobile) {
+                details.push(`
+            <div class="detail-row">
+                <div class="detail-label">Mobile:</div>
+                <div>${cleanValue(mobile)}</div>
+            </div>
+        `);
+            }
+
+            if (email) {
+                details.push(`
+            <div class="detail-row">
+                <div class="detail-label">Email:</div>
+                <div>${cleanValue(email)}</div>
+            </div>
+        `);
+            }
+
+            return details.join('');
+        }
+
+        function getRelationship(student, prefix, number) {
+            if (prefix === 'Par') {
+                const roles = [];
+                if (student[`${prefix}Resp${number}`] === 'YES') roles.push('Responsible');
+                if (student[`${prefix}SR${number}`] === 'YES') roles.push('Resident');
+                if (student[`${prefix}FMM${number}`] === 'YES') roles.push('Mail');
+                return roles.length ? roles.join(', ') : '';
+            }
+            return 'Emergency Contact';
+        }
+
+        function getValidationForField(validation, fieldPrefix) {
+            if (!validation) return { errors: [], warnings: [] };
+
+            const errors = validation.errors.filter(error => {
+                if (fieldPrefix.includes('Address')) {
+                    return error.startsWith(fieldPrefix);
+                }
+                if (fieldPrefix === 'School') {
+                    return error.startsWith('School:');
+                }
+                if (fieldPrefix === 'Student') {
+                    return error.startsWith('Student:') && !error.includes('Address');
+                }
+                return error.startsWith(fieldPrefix);
+            });
+
+            const warnings = validation.warnings.filter(warning => {
+                if (fieldPrefix.includes('Address')) {
+                    return warning.startsWith(fieldPrefix);
+                }
+                if (fieldPrefix === 'School') {
+                    return warning.startsWith('School:');
+                }
+                if (fieldPrefix === 'Student') {
+                    return warning.startsWith('Student:') && !warning.includes('Address');
+                }
+                return warning.startsWith(fieldPrefix);
+            });
+
+            return { errors, warnings };
+        }
+
+        function getValidationClass(validation, fieldPrefix) {
+            const fieldValidation = getValidationForField(validation, fieldPrefix);
+            if (fieldValidation.errors.length > 0) return 'error-highlight';
+            if (fieldValidation.warnings.length > 0) return 'warning-highlight';
+            return '';
+        }
+
+        function renderValidationMessages(validation, fieldPrefix) {
+            const fieldValidation = getValidationForField(validation, fieldPrefix);
+            const messages = [];
+
+            if (fieldValidation.errors.length > 0) {
+                messages.push(...fieldValidation.errors.map(error =>
+                    `<div class="error-text">❌ ${error.replace(fieldPrefix + ': ', '')}</div>`
+                ));
+            }
+            if (fieldValidation.warnings.length > 0) {
+                messages.push(...fieldValidation.warnings.map(warning =>
+                    `<div class="warning-text">⚠️ ${warning.replace(fieldPrefix + ': ', '')}</div>`
+                ));
+            }
+
+            return messages.join('');
+        }
+
+        function renderContactSection(student, prefix, number, title, validation) {
+            const firstName = student[`${prefix}FirstName${number}`];
+            const surname = student[`${prefix}Surname${number}`];
+
+            if (!firstName && !surname) return '';
+
+            const contactType = prefix === 'Par' ? 'Parent' : 'Contact';
+            const validationPrefix = `${contactType} ${number}`;
+            const sectionClass = getValidationClass(validation, validationPrefix);
+
+            // Get the relationship
+            const relationship = getRelationship(student, prefix, number);
+
+            // Only include the relationship tag span if there's a relationship to show
+            const relationshipTag = relationship ?
+                `<span class="relationship-tag">${relationship}</span>` :
+                '';
+
+            let gender = '';
+            if (xmlData.has(student['CC No.'])) {
+                const contacts = xmlData.get(student['CC No.']);
+                const contact = prefix === 'Par'
+                    ? contacts?.find(c => c.relLnkParentNo === number)
+                    : contacts?.find(c => c.order === number);
+                if (contact?.gender) {
+                    gender = contact.gender === 'M' ? 'Male' :
+                        contact.gender === 'F' ? 'Female' : 'Not Specified';
+                }
+            }
+
+            const address = {
+                line1: student[`${prefix}Add${number}L1`],
+                line2: student[`${prefix}Add${number}L2`],
+                line3: student[`${prefix}Add${number}L3`],
+                line4: student[`${prefix}Add${number}L4`],
+                town: student[`${prefix}Add${number}Town`],
+                state: student[`${prefix}Add${number}State`],
+                postcode: student[`${prefix}Add${number}PostCode`]
+            };
+
+            return `
+        <div class="detail-section ${sectionClass}">
+            <h3>${title} ${number} ${relationshipTag}</h3>
+            <div class="detail-row">
+                <div class="detail-label">Name:</div>
+                <div>${cleanValue(student[`${prefix}Title${number}`])} ${cleanValue(firstName)} ${cleanValue(surname)}</div>
+            </div>
+            ${gender ? `
+                <div class="detail-row">
+                    <div class="detail-label">Gender:</div>
+                    <div>${gender}</div>
+                </div>
+            ` : ''}
+            ${address.line1 ? `
+                <div class="detail-row">
+                    <div class="detail-label">Address:</div>
+                    <div>${formatAddress(address)}</div>
+                </div>
+            ` : ''}
+            <div class="contact-info">
+                ${renderContactDetails(student, prefix, number)}
+            </div>
+            ${renderValidationMessages(validation, validationPrefix)}
+        </div>
+    `;
+        }
+
+        // Settings and Modal Functions
+        function showSettingsModal() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function handleSettingsHover(setting) {
+            const descriptionDiv = document.getElementById('settingDescription');
+            const info = settingsInfo[setting];
+
+            if (info) {
+                descriptionDiv.innerHTML = `
+            <div class="settings-description active">
+                <h3>${info.title}</h3>
+                <p>${info.description}</p>
+            </div>
+        `;
+            } else {
+                descriptionDiv.innerHTML = '';
+            }
+        }
+
+        function showSummaryModal(type) {
+            const summary = type === 'error' ? getErrorSummary() : getWarningSummary();
+
+            const modalHTML = `
+        <div class="modal-overlay" onclick="closeModal(event)">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-title">${type === 'error' ? 'Error' : 'Warning'} Summary</div>
+                    <button class="modal-close" onclick="closeModal(event)">×</button>
+                </div>
+                ${Object.entries(summary)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([message, count]) => `
+                        <div class="${type}-summary-item">
+                            <div>${message}</div>
+                            <div class="summary-count">${count}</div>
+                        </div>
+                    `).join('')}
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function closeModal(event) {
+            if (event.target.classList.contains('modal-overlay') ||
+                event.target.classList.contains('modal-close')) {
+                const modal = document.querySelector('.modal-overlay');
+                if (modal) modal.remove();
+            }
+        }
+
+        function getErrorSummary() {
+            const summary = {};
+            const medicalVisible = document.getElementById('medicalToggle').checked;
+            const siblingsEnabled = document.getElementById('potentialSiblingsToggle').checked;
+            const viewYear12 = document.getElementById('viewYear12Toggle').checked;
+            const processedSiblingErrors = new Set();
+
+            students.forEach(student => {
+                // Skip Year 12 students if hidden
+                if (!viewYear12 && student.Year === '12') {
+                    return;
+                }
+
+                student.validation.errors
+                    .filter(error => {
+                        if (!medicalVisible && error.startsWith('Medical:')) return false;
+                        if (error.startsWith('Contact')) {
+                            const contactNum = error.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        if (error.startsWith('Sibling:')) {
+                            if (!siblingsEnabled) return false;
+                            if (error === 'Potential Sibling Mismatch') {
+                                if (processedSiblingErrors.has(error)) return false;
+                                processedSiblingErrors.add(error);
+                                return true;
+                            }
+                            return false;
+                        }
+                        return true;
+                    })
+                    .forEach(error => {
+                        const baseError = error.split(': ')[1] || error;
+                        summary[baseError] = (summary[baseError] || 0) + 1;
+                    });
+            });
+
+            return summary;
+        }
+
+        function getWarningSummary() {
+            const summary = {};
+            const medicalVisible = document.getElementById('medicalToggle').checked;
+            const siblingsEnabled = document.getElementById('potentialSiblingsToggle').checked;
+            const viewYear12 = document.getElementById('viewYear12Toggle').checked;
+            const processedSiblingWarnings = new Set();
+
+            students.forEach(student => {
+                // Skip Year 12 students if hidden
+                if (!viewYear12 && student.Year === '12') {
+                    return;
+                }
+
+                if (medicalVisible) {
+                    const medicalWarnings = student.validation.warnings.filter(w => w.startsWith('Medical:'));
+                    if (medicalWarnings.length > 0) {
+                        summary["Conditions without '**' will not sync"] =
+                            (summary["Conditions without '**' will not sync"] || 0) + medicalWarnings.length;
+                    }
+                }
+
+                student.validation.warnings
+                    .filter(warning => {
+                        if (warning.startsWith('Medical:')) return false;
+                        if (warning.startsWith('Contact')) {
+                            const contactNum = warning.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        if (warning.startsWith('Sibling:')) {
+                            if (!siblingsEnabled) return false;
+                            if (warning === 'Potential Sibling Match') {
+                                if (processedSiblingWarnings.has(warning)) return false;
+                                processedSiblingWarnings.add(warning);
+                                return true;
+                            }
+                            return false;
+                        }
+                        return true;
+                    })
+                    .forEach(warning => {
+                        const baseWarning = warning.split(': ')[1] || warning;
+                        summary[baseWarning] = (summary[baseWarning] || 0) + 1;
+                    });
+            });
+
+            return summary;
+        }
+
+        // Toggle Functions
+        function toggleMedicalDetails() {
+            const medicalSections = document.querySelectorAll('.medical-details');
+            const isVisible = document.getElementById('medicalToggle').checked;
+
+            medicalSections.forEach(section => {
+                section.classList.toggle('visible', isVisible);
+            });
+
+            // Refresh the current student details if one is selected
+            const activeCard = document.querySelector('.student-card.active');
+            if (activeCard) {
+                showStudentDetails(activeCard.dataset.id);
+            }
+
+            updateStats();
+            filterStudents(); // This will now properly filter based on medical visibility
+            saveSettings();
+        }
+
+        function toggleViewYear12() {
+            // Store current scroll position of the students list
+            const studentsList = document.getElementById('studentsList');
+            const scrollPosition = studentsList.scrollTop;
+
+            // Get currently selected student (if any)
+            const activeCard = document.querySelector('.student-card.active');
+            const currentStudentId = activeCard ? activeCard.dataset.id : null;
+            const currentStudent = students.find(s => s.id === parseInt(currentStudentId));
+
+            // Update the display
+            filterStudents();
+            updateStats();
+
+            // If a student was selected, try to keep them selected if they're still visible
+            if (currentStudent) {
+                const viewYear12 = document.getElementById('viewYear12Toggle').checked;
+                if (viewYear12 || currentStudent.Year !== '12') {
+                    // Student should still be visible, reselect them
+                    const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                    if (updatedCard) {
+                        updatedCard.classList.add('active');
+                        showStudentDetails(currentStudentId);
+                        updatedCard.scrollIntoView({ block: 'nearest' });
+                    }
+                } else {
+                    // Student is now hidden, clear the details view
+                    document.getElementById('studentDetails').innerHTML = document.querySelector('.no-selection').outerHTML;
+                }
+            }
+
+            // Restore scroll position
+            studentsList.scrollTop = scrollPosition;
+
+            saveSettings();
+        }
+
+        function validateStudent(student, xmlContacts) {
+            const validation = {
+                errors: [],
+                warnings: []
+            };
+
+            // If external student, only validate if they're allowed to be external
+            if (isExternalStudent(student)) {
+                const isSection24 = student.Form?.toLowerCase().includes('section 24');
+                const isCommunityKindy = student.Form?.toLowerCase().includes('community kindy');
+
+                if (!isSection24 && !isCommunityKindy) {
+                    validation.errors.push('Student: Only Section 24 & Community Kindy students allowed on External');
+                    return validation;
+                }
+            }
+
+            // Standard validation
+            const ccNo = student['CC No.']?.toString().trim();
+            if (!ccNo || ccNo === '0') {
+                validation.errors.push('School: Missing WASN');
+            } else if (ccNo.length < 8) {
+                validation.errors.push('School: Invalid WASN');
+            }
+
+            // Modified Form and Year validation to check for "Not Specified"
+            ['Form', 'Year'].forEach(field => {
+                const value = student[field]?.trim();
+                if (!value || value === '' || value.toLowerCase() === 'not specified') {
+                    validation.errors.push(`School: Missing ${field}`);
+                }
+            });
+
+            if (!isExternalStudent(student)) {
+                validateAddresses(student, validation);
+                validateContacts(student, xmlContacts, validation);
+
+                // Only run sibling validation if enabled
+                if (document.getElementById('potentialSiblingsToggle')?.checked) {
+                    validateSiblings(student, students, validation);
+                }
+            }
+
+            let conditionsWithoutAsterisk = 0;
+            for (let i = 1; i <= 9; i++) {
+                const condition = student[`MedCon${i}`];
+                if (condition && !condition.startsWith('**')) {
+                    validation.warnings.push(`Medical: Condition ${i} without '**' will not sync`);
+                    conditionsWithoutAsterisk++;
+                }
+            }
+
+            return validation;
+        }
+
+        function toggleStudentResident() {
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+            updateStats();
+            filterStudents();
+
+            const activeCard = document.querySelector('.student-card.active');
+            if (activeCard) {
+                showStudentDetails(activeCard.dataset.id);
+            }
+            saveSettings();
+        }
+
+        function toggleEmailMM() {
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+            updateStats();
+            filterStudents();
+
+            const activeCard = document.querySelector('.student-card.active');
+            if (activeCard) {
+                showStudentDetails(activeCard.dataset.id);
+            }
+            saveSettings();
+        }
+
+        function toggleColorfulMode() {
+            const activeCard = document.querySelector('.student-card.active');
+            if (activeCard) {
+                if (!document.getElementById('colorfulToggle').checked) {
+                    studentColors.clear();
+                    currentColorIndex = 0;
+                }
+                showStudentDetails(activeCard.dataset.id);
+            }
+            saveSettings();
+        }
+
+        function toggleShowValid() {
+            showValidStudents = document.getElementById('showValidToggle').checked;
+            filterStudents();
+            saveSettings();
+        }
+
+        function toggleWasn() {
+            filterStudents();
+            saveSettings();
+        }
+
+
+        function refreshColors(studentId) {
+            const shouldColorize = document.getElementById('colorfulToggle').checked;
+
+            if (shouldColorize && !studentColors.has(studentId)) {
+                studentColors.set(studentId, getNextColor());
+            }
+
+            const studentColor = shouldColorize ? studentColors.get(studentId) : '#2563eb';
+
+            document.querySelectorAll('.detail-section h3').forEach(title => {
+                if (title.textContent.includes('Personal Information') ||
+                    title.textContent.includes('School Information') ||
+                    title.textContent.includes('Student Contact Information') ||
+                    title.textContent.includes('Parent/Guardian') ||
+                    title.textContent.includes('Emergency Contact')) {
+                    title.style.color = studentColor;
+                }
+            });
+        }
+
+        // Event Listeners Setup
+        function setupFileUpload(elementId, handleFile, fileType) {
+            const uploadArea = document.getElementById(elementId);
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (elementId === 'xmlUploadArea' && !csvUploaded) return;
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+
+                if (elementId === 'xmlUploadArea' && !csvUploaded) {
+                    alert('Please upload a CSV file first');
+                    return;
+                }
+
+                const file = e.dataTransfer.files[0];
+                if (file && file.name.toLowerCase().endsWith(fileType)) {
+                    handleFile(file);
+                } else {
+                    alert(`Please upload a ${fileType} file`);
+                }
+            });
+
+            uploadArea.addEventListener('click', () => {
+                if (elementId === 'xmlUploadArea' && !csvUploaded) {
+                    alert('Please upload a CSV file first');
+                    return;
+                }
+
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = fileType;
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        handleFile(file);
+                    }
+                };
+                input.click();
+            });
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+
+            e.preventDefault();
+
+            const activeCard = document.querySelector('.student-card.active');
+            if (!activeCard) {
+                const firstStudent = document.querySelector('.student-card');
+                if (firstStudent) {
+                    firstStudent.click();
+                }
+                return;
+            }
+
+            const allCards = Array.from(document.querySelectorAll('.student-card'));
+            const currentIndex = allCards.indexOf(activeCard);
+            let nextIndex;
+
+            if (e.key === 'ArrowUp') {
+                nextIndex = currentIndex - 1;
+                if (nextIndex < 0) {
+                    nextIndex = allCards.length - 1;
+                }
+            } else {
+                nextIndex = currentIndex + 1;
+                if (nextIndex >= allCards.length) {
+                    nextIndex = 0;
+                }
+            }
+
+            allCards[nextIndex].click();
+            allCards[nextIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupFileUpload('csvUploadArea', handleCSVFile, '.csv');
+            setupFileUpload('xmlUploadArea', handleXMLFile, '.xml');
+            updateUploadAreas();
+
+            // Settings modal event listeners
+            document.getElementById('settingsButton').addEventListener('click', showSettingsModal);
+            document.getElementById('settingsModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closeSettingsModal();
+                }
+            });
+            document.querySelectorAll('.settings-option').forEach(option => {
+                option.addEventListener('mouseenter', () => {
+                    handleSettingsHover(option.dataset.setting);
+                });
+            });
+
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            if (scrollIndicator) {
+                scrollIndicator.addEventListener('click', scrollToInstructions);
+            }
+
+            // Tilda to hide/show medical notes
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '`' || e.key === '~') {
+                    showMedicalNotes = !showMedicalNotes;
+
+                    // Update all medical sections, including the currently shown one
+                    document.querySelectorAll('.medical-details').forEach(details => {
+                        if (showMedicalNotes) {
+                            details.classList.add('show-medical-notes');
+                        } else {
+                            details.classList.remove('show-medical-notes');
+                        }
+                    });
+
+                    showNotification(`Medical notes ${showMedicalNotes ? 'shown' : 'hidden'}`);
+                    saveSettings();
+                }
+            });
+
+            // Close modals with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeSettingsModal();
+                    const summaryModal = document.querySelector('.modal-overlay');
+                    if (summaryModal) summaryModal.remove();
+                }
+            });
+
+            // Load saved settings
+            loadSettings();
+        });
+
+    </script>
+</body>
+
+</html>
