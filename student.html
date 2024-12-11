@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.8.4b</title>
+    <title>Student Validator v2.8.5</title>
     <style>
         /* Base Reset */
         * {
@@ -977,6 +977,15 @@
             background-color: #1d4ed8;
         }
 
+        .update-notification {
+            background-color: #0891b2 !important;
+            /* Different color to distinguish from other notifications */
+        }
+
+        .update-notification a:hover {
+            text-decoration: none !important;
+        }
+
         /* Make it responsive */
         @media (max-width: 900px) {
             .checks-container {
@@ -1323,6 +1332,9 @@
         let showValidStudents = false;
         let showMedicalNotes = false;
 
+        // Used for built in update checker
+        const GITHUB_REPO = '/TheFauxDreamer/Student-Validator';
+
         // Settings descriptions
         const settingsInfo = {
             medical: {
@@ -1358,6 +1370,107 @@
                 description: "Toggle the visibility of Year 12 students in the list.</br></br>When enabled (default), shows all students including Year 12s."
             }
         };
+
+
+        // Function to get version and title components with sub-version support
+        function getVersionInfo() {
+            const title = document.title;  // e.g. "Student Validator v2.8.3" or "Student Validator v0.0.0a"
+            const versionMatch = title.match(/(.*?)\s+v(\d+\.\d+\.\d+[a-z]?)/);
+            if (versionMatch) {
+                return {
+                    appName: versionMatch[1],      // "Student Validator"
+                    version: versionMatch[2],      // "2.8.3" or "0.0.0a"
+                    fullVersion: `v${versionMatch[2]}` // "v2.8.3" or "v0.0.0a"
+                };
+            }
+            console.warn('Could not parse version info from title');
+            return {
+                appName: 'Student Validator',
+                version: '0.0.0',
+                fullVersion: 'v0.0.0'
+            };
+        }
+
+
+        // Function to check for updates
+        async function checkForUpdates() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
+                const data = await response.json();
+
+                if (data.tag_name) {
+                    const latestVersion = data.tag_name.replace('v', '');
+                    const currentVersion = getVersionInfo().version;
+
+                    if (isNewerVersion(latestVersion, currentVersion)) {
+                        showUpdateNotification(latestVersion, data.html_url);
+                    }
+                }
+            } catch (error) {
+                console.log('Unable to check for updates:', error);
+            }
+        }
+
+        // Helper function to compare version numbers
+        function isNewerVersion(latest, current) {
+            // Split versions into numeric parts and possible letter suffix
+            const parseVersion = (ver) => {
+                const match = ver.match(/^(\d+)\.(\d+)\.(\d+)([a-z])?$/);
+                if (!match) return null;
+
+                return {
+                    major: parseInt(match[1]),
+                    minor: parseInt(match[2]),
+                    patch: parseInt(match[3]),
+                    suffix: match[4] || ''
+                };
+            };
+
+            const latestParts = parseVersion(latest);
+            const currentParts = parseVersion(current);
+
+            if (!latestParts || !currentParts) return false;
+
+            // Compare major.minor.patch first
+            if (latestParts.major !== currentParts.major) {
+                return latestParts.major > currentParts.major;
+            }
+            if (latestParts.minor !== currentParts.minor) {
+                return latestParts.minor > currentParts.minor;
+            }
+            if (latestParts.patch !== currentParts.patch) {
+                return latestParts.patch > currentParts.patch;
+            }
+
+            // If numeric versions are equal, compare suffixes
+            // No suffix is considered newer than any suffix
+            if (!latestParts.suffix && currentParts.suffix) return true;
+            if (latestParts.suffix && !currentParts.suffix) return false;
+            return latestParts.suffix > currentParts.suffix; // 'b' is greater than 'a'
+        }
+
+        // Function to show update notification
+        function showUpdateNotification(newVersion, downloadUrl) {
+            const notification = document.createElement('div');
+            notification.className = 'notification update-notification show';
+            notification.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>New Version Available!</strong><br>
+                Version ${newVersion} is now available.<br>
+                <a href="${downloadUrl}" target="_blank" style="color: white; text-decoration: underline;">
+                    Click here to download
+                </a>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; color: white; cursor: pointer; margin-left: 1rem;">
+                ×
+            </button>
+        </div>
+    `;
+
+            document.body.appendChild(notification);
+        }
 
         function scrollToInstructions() {
             const container = document.querySelector('.no-selection');
@@ -3381,6 +3494,16 @@
             setupFileUpload('csvUploadArea', handleCSVFile, '.csv');
             setupFileUpload('xmlUploadArea', handleXMLFile, '.xml');
             updateUploadAreas();
+            checkForUpdates();
+
+            // Get version info
+            const versionInfo = getVersionInfo();
+
+            // Update h1 text
+            const h1 = document.querySelector('h1');
+            if (h1) {
+                h1.textContent = `${versionInfo.appName} ${versionInfo.fullVersion}`;
+            }
 
             // Settings modal event listeners
             document.getElementById('settingsButton').addEventListener('click', showSettingsModal);
