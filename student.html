@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.8.6</title>
+    <title>Student Validator v2.8.7</title>
     <style>
         /* Base Reset */
         * {
@@ -350,7 +350,8 @@
 
         /* Student Card */
         .student-card {
-            padding: 0.75rem;
+            padding: 1rem;
+            /* Set consistent padding for all states */
             border: 1px solid #e5e7eb;
             margin-bottom: 0.5rem;
             border-radius: 0.25rem;
@@ -1062,6 +1063,52 @@
             text-decoration: none !important;
         }
 
+        /* Update validation-details to ensure proper spacing */
+        .validation-details {
+            margin-top: 0.5rem;
+            font-size: 0.85em;
+            padding-left: 0.25rem;
+            /* Reduced padding to align better */
+        }
+
+        /* Add smooth height transition for validation details */
+        .validation-details {
+            transition: max-height 0.2s ease-out;
+        }
+
+        /* Ensure consistent spacing in validation message */
+        .validation-message {
+            margin-top: 0.5rem;
+            font-weight: 600;
+            /* Makes text bold */
+        }
+
+        /* Make sure error and warning colors remain prominent */
+        .validation-error {
+            font-weight: 600;
+            color: #ef5350;
+        }
+
+        .validation-warning {
+            font-weight: 600;
+            color: #854d0e;
+        }
+
+        /* Ensure consistent list spacing */
+        .validation-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 0.25rem 0;
+        }
+
+        .validation-details li {
+            margin: 0.25rem 0;
+            line-height: 1.3;
+            padding-left: 0.25rem;
+            /* Consistent indentation */
+        }
+
+
         /* Make it responsive */
         @media (max-width: 900px) {
             .checks-container {
@@ -1401,6 +1448,10 @@
                         <input type="checkbox" id="viewYear12Toggle" checked onchange="toggleViewYear12()">
                         <label for="viewYear12Toggle">Show Year 12s</label>
                     </div>
+                    <div class="settings-option" data-setting="detailedList">
+                        <input type="checkbox" id="detailedListToggle" onchange="toggleDetailedList()">
+                        <label for="detailedListToggle">Detailed Student List</label>
+                    </div>
                 </div>
             </div>
             <div class="settings-right">
@@ -1427,7 +1478,7 @@
         const settingsInfo = {
             medical: {
                 title: "Medical Information Display",
-                description: "Toggle the visibility of student medical information in the details view.</br></br> When enabled shows: doctor details, medical practice information, contact number, & medical conditions.</br></br>"+
+                description: "Toggle the visibility of student medical information in the details view.</br></br> When enabled shows: doctor details, medical practice information, contact number, & medical conditions.</br></br>" +
                     "<em>Additionally, to display Medical Condition Notes press the ~ key.</em>"
             },
             colorful: {
@@ -1452,7 +1503,7 @@
             },
             potentialSiblings: {
                 title: "Potential Siblings Check",
-                description: "Attempts to identify siblings, and any potential data inconsistencies.</br></br>When enabled, shows warnings for potential sibling matches and errors for mismatched details between siblings.</br></br>Sibling matches are determined by comparing parent names, contact details, and addresses.</br></br>"+
+                description: "Attempts to identify siblings, and any potential data inconsistencies.</br></br>When enabled, shows warnings for potential sibling matches and errors for mismatched details between siblings.</br></br>Sibling matches are determined by comparing parent names, contact details, and addresses.</br></br>" +
                     "<em>NOTE: Student surname is not used for sibling checks.</em>"
             },
             viewYear12: {
@@ -1470,6 +1521,10 @@
                     "• You'll need to manually check for updates</br></br>" +
                     "<em>NOTE: Downloading & Installing updates must still be done manually.</em></br></br>" +
                     "<strong>PRIVACY: No information ever leaves the validator.</strong>"
+            },
+            detailedList: {
+                title: "Detailed Student List",
+                description: "Allows you to shows individual errors and warnings in the student list for a more detailed view at a glance instead of just totals.</br></br>When enabled, displays all validation messages directly in the student list for quick scanning.</br></br>When disabled (default), shows only the total errors and warnings for that student."
             }
         };
 
@@ -1706,7 +1761,8 @@
                 viewYear12: document.getElementById('viewYear12Toggle').checked,
                 showMedicalNotes: showMedicalNotes,
                 savedAt: new Date().toLocaleString(),
-                checkUpdates: document.getElementById('checkUpdatesToggle').checked
+                checkUpdates: document.getElementById('checkUpdatesToggle').checked,
+                detailedList: document.getElementById('detailedListToggle').checked
             };
             localStorage.setItem('studentValidatorSettings', JSON.stringify(settings));
         }
@@ -1730,6 +1786,8 @@
                     settings.viewYear12 !== undefined ? settings.viewYear12 : true;
                 document.getElementById('checkUpdatesToggle').checked =
                     settings.checkUpdates !== undefined ? settings.checkUpdates : true;
+                document.getElementById('detailedListToggle').checked =
+                    settings.detailedList !== undefined ? settings.detailedList : false;
 
                 if (settings.checkUpdates !== false) {
                     checkForUpdates();
@@ -3037,6 +3095,7 @@
         function renderStudents(filteredStudents = students) {
             const showWasn = document.getElementById('wasnToggle').checked;
             const medicalVisible = document.getElementById('medicalToggle').checked;
+            const isDetailed = document.getElementById('detailedListToggle')?.checked;
             const studentsList = document.getElementById('studentsList');
 
             studentsList.innerHTML = filteredStudents.map(student => {
@@ -3058,19 +3117,42 @@
                     return true;
                 });
 
+                const totalIssues = relevantErrors.length + relevantWarnings.length;
+
                 return `
-            <div class="student-card ${relevantErrors.length ? 'error-highlight' :
-                        relevantWarnings.length ? 'warning-highlight' : ''}" 
-                 data-id="${student.id}">
+            <div class="student-card ${isDetailed ? 'detailed' : ''} ${relevantErrors.length ? 'error-highlight' :
+                        relevantWarnings.length ? 'warning-highlight' : ''
+                    }" data-id="${student.id}">
                 <div><strong>${cleanValue(student.PreferredName || student.FirstName)} ${cleanValue(student.Surname)}</strong></div>
                 <div>${showWasn ? 'WASN: ' + cleanValue(student['CC No.']) : 'SIS Num: ' + cleanValue(student.Reference)}</div>
                 <div style="color: #6b7280; font-size: 0.9em;">Year ${cleanValue(student.Year)} - ${cleanValue(student.Form)}</div>
-                ${relevantErrors.length || relevantWarnings.length ? `
+                ${totalIssues > 0 ? `
                     <div class="validation-message">
-                        ${relevantErrors.length ?
-                            `<span class="validation-error">❌ ${relevantErrors.length} errors</span>` :
-                            `<span class="validation-warning">⚠️ ${relevantWarnings.length} warnings</span>`}
+                        ${relevantErrors.length && relevantWarnings.length ?
+                            `<span class="validation-error">❌⚠️ ${totalIssues} issues</span>` :
+                            relevantErrors.length ?
+                                `<span class="validation-error">❌ ${relevantErrors.length} errors</span>` :
+                                `<span class="validation-warning">⚠️ ${relevantWarnings.length} warnings</span>`
+                        }
                     </div>
+                    ${isDetailed && totalIssues > 0 ? `
+                        <div class="validation-details">
+                            ${relevantErrors.length ? `
+                                <ul>
+                                    ${relevantErrors.map(error =>
+                            `<li class="error-item">❌ ${error}</li>`
+                        ).join('')}
+                                </ul>
+                            ` : ''}
+                            ${relevantWarnings.length ? `
+                                <ul>
+                                    ${relevantWarnings.map(warning =>
+                            `<li class="warning-item">⚠️ ${warning}</li>`
+                        ).join('')}
+                                </ul>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                 ` : ''}
             </div>
         `;
@@ -3450,6 +3532,29 @@
 
             updateStats();
             filterStudents(); // This will now properly filter based on medical visibility
+            saveSettings();
+        }
+
+        function toggleDetailedList() {
+            // Store current scroll position and selected student
+            const studentsList = document.getElementById('studentsList');
+            const scrollPosition = studentsList.scrollTop;
+            const currentStudentCard = document.querySelector('.student-card.active');
+            const currentStudentId = currentStudentCard?.dataset.id;
+
+            // Update the display
+            filterStudents();
+
+            // Restore selection and scroll position
+            if (currentStudentId) {
+                const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                if (updatedCard) {
+                    updatedCard.classList.add('active');
+                    showStudentDetails(currentStudentId);
+                }
+            }
+            studentsList.scrollTop = scrollPosition;
+
             saveSettings();
         }
 
