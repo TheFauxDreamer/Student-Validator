@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.8.7a</title>
+    <title>Student Validator v2.9.0</title>
     <style>
         /* Base Reset */
         * {
@@ -590,13 +590,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .modal-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #2563eb;
+            color: #111827;
         }
 
         .modal-close {
@@ -605,28 +606,147 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: #6b7280;
+            padding: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #111827;
+        }
+
+        .modal-content {
+            padding: 1rem;
+            max-height: 60vh;
+            overflow-y: auto;
         }
 
         .error-summary-item,
         .warning-summary-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem;
+            align-items: center;
+            padding: 0.75rem;
             margin: 0.25rem 0;
-            border-radius: 0.25rem;
+            border-radius: 0.375rem;
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
         }
 
         .error-summary-item {
-            background-color: rgba(239, 83, 80, 0.1);
+            border-left: 4px solid #ef5350;
         }
 
         .warning-summary-item {
-            background-color: rgba(255, 183, 77, 0.1);
+            border-left: 4px solid #ffb74d;
+        }
+
+        .error-summary-item:hover,
+        .warning-summary-item:hover {
+            background-color: #f9fafb;
+        }
+
+
+        /* Styles for hidden items */
+        .error-summary-item.hidden-item,
+        .warning-summary-item.hidden-item {
+            opacity: 0.6;
+            background-color: #f9fafb;
+            border-left-color: #d1d5db;
+        }
+
+        .summary-item-content {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-right: 1rem;
         }
 
         .summary-count {
-            font-weight: 600;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            background-color: #f3f4f6;
+            border-radius: 0.375rem;
+            min-width: 2.5rem;
+            text-align: center;
             margin-left: 1rem;
+            color: #4b5563;
+        }
+
+        .hidden-item .summary-count {
+            background-color: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .summary-item-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Button styles */
+        .hide-message-btn,
+        .show-message-btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hide-message-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Error item buttons */
+        .error-summary-item .hide-message-btn {
+            background-color: #fef2f2;
+            color: #ef5350;
+            border: 1px solid #fee2e2;
+        }
+
+        .error-summary-item .hide-message-btn:hover {
+            background-color: #fee2e2;
+        }
+
+        .error-summary-item.hidden-item .show-message-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+        }
+
+        .error-summary-item.hidden-item .show-message-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+
+
+        .warning-summary-item .hide-message-btn {
+            background-color: #fffbeb;
+            color: #f59e0b;
+            border: 1px solid #fef3c7;
+        }
+
+        .warning-summary-item .hide-message-btn:hover {
+            background-color: #fef3c7;
+        }
+
+        .warning-summary-item.hidden-item .show-message-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+        }
+
+        .warning-summary-item.hidden-item .show-message-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .no-items-message {
+            text-align: center;
+            color: #6b7280;
+            padding: 1rem;
+            font-style: italic;
         }
 
         .video-container {
@@ -665,22 +785,22 @@
         }
 
         /* Make sure video container doesn't cause overflow 
-.video-container {
-    position: relative;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio
-    height: 0;
-    margin: 2rem auto;
-    max-width: 800px;
-    width: 100%;
-}
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio
+            height: 0;
+            margin: 2rem auto;
+            max-width: 800px;
+            width: 100%;
+        }
 
-.video-container iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-} */
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        } */
 
         .checks-container {
             display: flex;
@@ -1109,6 +1229,268 @@
         }
 
 
+        .hide-message {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            opacity: 0.5;
+            padding: 0 4px;
+            margin-left: 8px;
+            font-size: 1.1em;
+            transition: opacity 0.2s;
+        }
+
+        .hide-message:hover {
+            opacity: 1;
+        }
+
+        .hidden-messages-content {
+            padding: 1rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .hidden-messages-section {
+            margin-bottom: 2rem;
+        }
+
+        .hidden-messages-section h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .hidden-messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .hidden-message-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background-color: white;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+            transition: background-color 0.2s;
+        }
+
+        .hidden-message-item.error {
+            border-left: 4px solid #ef5350;
+        }
+
+        .hidden-message-item.warning {
+            border-left: 4px solid #ffb74d;
+        }
+
+        .hidden-message-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .hidden-message-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-right: 1rem;
+        }
+
+        .hidden-message-icon {
+            flex-shrink: 0;
+        }
+
+        .hidden-message-count {
+            background-color: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-left: auto;
+        }
+
+        .hidden-message-item button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .hidden-message-item button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .no-hidden-messages {
+            color: #6b7280;
+            font-style: italic;
+            padding: 0.5rem;
+        }
+
+        .show-message-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .show-message-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .no-hidden-messages {
+            color: #6b7280;
+            font-style: italic;
+            padding: 0.75rem;
+            text-align: center;
+            background-color: #f9fafb;
+            border-radius: 0.375rem;
+        }
+
+        .settings-option.manage-messages {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .settings-option.manage-messages:hover {
+            background-color: #f3f4f6;
+        }
+
+        .settings-option.manage-messages svg {
+            color: #2563eb;
+        }
+
+        .settings-option.manage-messages label {
+            cursor: pointer;
+            user-select: none;
+            margin-left: 0.5rem;
+            color: #374151;
+        }
+
+        .hidden-message-count {
+            margin-left: auto;
+            background-color: #2563eb;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            min-width: 1.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        .hidden-message-count:not(:empty) {
+            display: inline-block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-header h3 {
+            color: #2563eb;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .show-all-btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .show-all-btn.error {
+            background-color: #fef2f2;
+            color: #ef5350;
+            border-color: #fee2e2;
+        }
+
+        .show-all-btn.error:hover {
+            background-color: #fee2e2;
+        }
+
+        .show-all-btn.warning {
+            background-color: #fffbeb;
+            color: #f59e0b;
+            border-color: #fef3c7;
+        }
+
+        .show-all-btn.warning:hover {
+            background-color: #fef3c7;
+        }
+
+        .hidden-messages-section {
+            margin-bottom: 2rem;
+        }
+
+        .hidden-messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* Disabled button styles */
+        .hide-message-btn.disabled {
+            background-color: #f3f4f6 !important;
+            color: #9ca3af !important;
+            border-color: #e5e7eb !important;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        /* Custom tooltip styles */
+        .hide-message-btn.disabled:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: calc(100% + 5px);
+            right: 0;
+            background-color: #374151;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Arrow for tooltip */
+        .hide-message-btn.disabled:hover::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% - 1px);
+            right: 10px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #374151 transparent transparent transparent;
+            z-index: 10;
+        }
+
+
         /* Make it responsive */
         @media (max-width: 900px) {
             .checks-container {
@@ -1414,6 +1796,17 @@
                         </label>
                     </div>
 
+                    <div class="settings-option manage-messages" data-setting="hiddenMessages"
+                        onclick="unhideAllMessages()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <label>Show All Hidden Messages</label>
+                        <span class="hidden-message-count" id="hiddenMessageCount"></span>
+                    </div>
+
                     <div class="settings-divider"></div>
 
                     <div class="settings-option" data-setting="medical">
@@ -1468,6 +1861,23 @@
         let xmlUploaded = false;
         let showValidStudents = false;
         let showMedicalNotes = false;
+        let hiddenErrors = new Set();
+        let hiddenWarnings = new Set();
+
+
+        const UNHIDEABLE_MESSAGES = [
+            "Residential College can't be a contact",
+            "Potential Sibling Match",
+            "Potential Sibling Mismatch"  // Include this too since they're related
+        ];
+
+        // Helper function to check if a message is unhideable
+        function isUnhideableMessage(message) {
+            // Extract base message without prefix
+            const baseMessage = message.includes(': ') ? message.split(': ')[1] : message;
+            return UNHIDEABLE_MESSAGES.includes(baseMessage);
+        }
+
 
         // Used for built in update checker
         const GITHUB_REPO = 'TheFauxDreamer/Student-Validator';
@@ -1525,6 +1935,10 @@
             detailedList: {
                 title: "Detailed Student List",
                 description: "Allows you to show individual errors and warnings in the student list for a more detailed view at a glance instead of just totals.</br></br>When enabled, displays all validation messages directly in the student list for quick scanning.</br></br>When disabled (default), shows only the total errors and warnings for that student."
+            },
+            hiddenMessages: {
+                title: "Show All Hidden Messages",
+                description: "Unhide all currently hidden errors and warnings in one click. This will restore visibility to all messages you've previously hidden."
             }
         };
 
@@ -1849,6 +2263,12 @@
             return value.toString().replace(/['"]+/g, '').trim();
         }
 
+        // Helper function to check if a message is hidden
+        function isMessageHidden(message, type) {
+            const set = type === 'error' ? hiddenErrors : hiddenWarnings;
+            return set.has(message);
+        }
+
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
@@ -2166,6 +2586,38 @@
             currentColorIndex = (currentColorIndex + 1) % colors.length;
             return color;
         }
+
+        function initializeHiddenMessages() {
+            const savedHiddenErrors = localStorage.getItem('hiddenErrors');
+            const savedHiddenWarnings = localStorage.getItem('hiddenWarnings');
+
+            if (savedHiddenErrors) {
+                hiddenErrors = new Set(JSON.parse(savedHiddenErrors));
+            }
+            if (savedHiddenWarnings) {
+                hiddenWarnings = new Set(JSON.parse(savedHiddenWarnings));
+            }
+            updateHiddenMessageCount();
+        }
+
+        function saveHiddenMessages() {
+            localStorage.setItem('hiddenErrors', JSON.stringify([...hiddenErrors]));
+            localStorage.setItem('hiddenWarnings', JSON.stringify([...hiddenWarnings]));
+        }
+
+        function filterHiddenMessages(messages, type) {
+            const hiddenSet = type === 'error' ? hiddenErrors : hiddenWarnings;
+            return messages.filter(msg => !hiddenSet.has(msg.split(': ')[1] || msg));
+        }
+
+        function updateHiddenMessageCount() {
+            const count = hiddenErrors.size + hiddenWarnings.size;
+            const countElement = document.getElementById('hiddenMessageCount');
+            if (countElement) {
+                countElement.textContent = count > 0 ? count : '';
+            }
+        }
+
 
         // Helper function to check if student is external
         function isExternalStudent(student) {
@@ -2664,7 +3116,6 @@
             const validation = student.validation;
             const studentDetails = document.getElementById('studentDetails');
 
-            // Helper function to check if date is in the future
             function isDateInFuture(dateString) {
                 if (!dateString) return false;
                 const entryDate = new Date(dateString);
@@ -2758,9 +3209,9 @@
                 </div>
                 ${renderValidationMessages(validation, 'Student Address')}
             </div>
-                ${document.getElementById('potentialSiblingsToggle')?.checked ?
+            
+            ${document.getElementById('potentialSiblingsToggle')?.checked ?
                     renderSiblingSection(student, validation) : ''}
-
 
             <div class="contacts-grid full-width">
                 ${['1', '2'].map(num => renderContactSection(student, 'Par', num, 'Parent/Guardian', validation)).filter(Boolean).join('')}
@@ -2772,75 +3223,21 @@
             </div>
 
             <div class="medical-details detail-section full-width">
-    <h3>Medical Information</h3>
-    <div class="detail-row">
-        <div class="detail-label">Doctor:</div>
-        <div>${cleanValue(student.MedPract)}</div>
-    </div>
-    <div class="detail-row">
-        <div class="detail-label">Practice:</div>
-        <div>${cleanValue(student.PractAdd)}</div>
-    </div>
-    <div class="detail-row">
-        <div class="detail-label">Phone:</div>
-        <div>${cleanValue(student.PractTel1)}</div>
-    </div>
-
-    ${(() => {
-                    // Find all medical conditions
-                    const conditions = [];
-                    for (let i = 1; i <= 9; i++) {
-                        const condition = student[`MedCon${i}`];
-                        const notes = student[`MedCon${i}Notes`];
-                        const flagged = student[`MedCon${i}Flagged`];
-
-                        if (condition || notes || flagged) {
-                            conditions.push({
-                                condition,
-                                notes,
-                                flagged,
-                                index: i,
-                                willSync: condition?.startsWith('**')
-                            });
-                        }
-                    }
-
-                    if (conditions.length === 0) return '';
-
-                    return `
-            <h4 class="condition-header">Medical Conditions</h4>
-            ${conditions.map((cond) => `
-<div class="detail-row ${cond.flagged === 'YES' ? 'medical-condition attention' : 'medical-condition'} 
-     ${!cond.willSync ? 'warning-highlight' : ''}">
-    <div class="condition-content">
-        <div class="detail-label">Condition ${cond.index}:</div>
-        <div class="condition-info">
-            <div class="condition-value">
-                ${cleanValue(cond.condition)}
-                ${cond.flagged === 'YES' ? `
-                    <span class="condition-alert">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                        Requires Attention
-                    </span>` :
-                            ''}
-            </div>
-            ${cond.notes ? `
-                <div class="condition-notes">
-                    ${cleanValue(cond.notes)}
+                <h3>Medical Information</h3>
+                <div class="detail-row">
+                    <div class="detail-label">Doctor:</div>
+                    <div>${cleanValue(student.MedPract)}</div>
                 </div>
-            ` : ''}
-        </div>
-        ${!cond.willSync ? `
-            <div class="warning-text">⚠️ Conditions without '**' will not sync</div>
-        ` : ''}
-    </div>
-</div>
-            `).join('')}
-        `;
-                })()}
-</div>
+                <div class="detail-row">
+                    <div class="detail-label">Practice:</div>
+                    <div>${cleanValue(student.PractAdd)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Phone:</div>
+                    <div>${cleanValue(student.PractTel1)}</div>
+                </div>
+                ${renderMedicalConditions(student, validation)}
+            </div>
         </div>
     `;
 
@@ -2856,6 +3253,126 @@
                     medicalSection.classList.remove('show-medical-notes');
                 }
             }
+        }
+
+        function renderMedicalConditions(student, validation) {
+            // Find all medical conditions
+            const conditions = [];
+            for (let i = 1; i <= 9; i++) {
+                const condition = student[`MedCon${i}`];
+                const notes = student[`MedCon${i}Notes`];
+                const flagged = student[`MedCon${i}Flagged`];
+
+                if (condition || notes || flagged) {
+                    conditions.push({
+                        condition,
+                        notes,
+                        flagged,
+                        index: i,
+                        willSync: condition?.startsWith('**')
+                    });
+                }
+            }
+
+            if (conditions.length === 0) return '';
+
+            return `
+        <h4 class="condition-header">Medical Conditions</h4>
+        ${conditions.map((cond) => `
+            <div class="detail-row ${cond.flagged === 'YES' ? 'medical-condition attention' : 'medical-condition'} 
+                 ${!cond.willSync ? 'warning-highlight' : ''}">
+                <div class="condition-content">
+                    <div class="detail-label">Condition ${cond.index}:</div>
+                    <div class="condition-info">
+                        <div class="condition-value">
+                            ${cleanValue(cond.condition)}
+                            ${cond.flagged === 'YES' ? `
+                                <span class="condition-alert">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                    </svg>
+                                    Requires Attention
+                                </span>` : ''
+                }
+                        </div>
+                        ${cond.notes ? `
+                            <div class="condition-notes">
+                                ${cleanValue(cond.notes)}
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${!cond.willSync ? `
+                        <div class="warning-text">⚠️ Conditions without '**' will not sync</div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('')}
+    `;
+        }
+
+        // Also restore the renderContactSection function
+        function renderContactSection(student, prefix, number, title, validation) {
+            const firstName = student[`${prefix}FirstName${number}`];
+            const surname = student[`${prefix}Surname${number}`];
+
+            if (!firstName && !surname) return '';
+
+            const contactType = prefix === 'Par' ? 'Parent' : 'Contact';
+            const validationPrefix = `${contactType} ${number}`;
+            const sectionClass = getValidationClass(validation, validationPrefix);
+
+            const relationship = getRelationship(student, prefix, number);
+            const relationshipTag = relationship ?
+                `<span class="relationship-tag">${relationship}</span>` :
+                '';
+
+            let gender = '';
+            if (xmlData.has(student['CC No.'])) {
+                const contacts = xmlData.get(student['CC No.']);
+                const contact = prefix === 'Par'
+                    ? contacts?.find(c => c.relLnkParentNo === number)
+                    : contacts?.find(c => c.order === number);
+                if (contact?.gender) {
+                    gender = contact.gender === 'M' ? 'Male' :
+                        contact.gender === 'F' ? 'Female' : 'Not Specified';
+                }
+            }
+
+            const address = {
+                line1: student[`${prefix}Add${number}L1`],
+                line2: student[`${prefix}Add${number}L2`],
+                line3: student[`${prefix}Add${number}L3`],
+                line4: student[`${prefix}Add${number}L4`],
+                town: student[`${prefix}Add${number}Town`],
+                state: student[`${prefix}Add${number}State`],
+                postcode: student[`${prefix}Add${number}PostCode`]
+            };
+
+            return `
+        <div class="detail-section ${sectionClass}">
+            <h3>${title} ${number} ${relationshipTag}</h3>
+            <div class="detail-row">
+                <div class="detail-label">Name:</div>
+                <div>${cleanValue(student[`${prefix}Title${number}`])} ${cleanValue(firstName)} ${cleanValue(surname)}</div>
+            </div>
+            ${gender ? `
+                <div class="detail-row">
+                    <div class="detail-label">Gender:</div>
+                    <div>${gender}</div>
+                </div>
+            ` : ''}
+            ${address.line1 ? `
+                <div class="detail-row">
+                    <div class="detail-label">Address:</div>
+                    <div>${formatAddress(address)}</div>
+                </div>
+            ` : ''}
+            <div class="contact-info">
+                ${renderContactDetails(student, prefix, number)}
+            </div>
+            ${renderValidationMessages(validation, validationPrefix)}
+        </div>
+    `;
         }
 
         // File handling
@@ -3056,30 +3573,34 @@
                 }
 
                 if (!showValidStudents) {
-                    // Get relevant errors and warnings based on medical visibility
                     const relevantErrors = student.validation.errors.filter(error => {
-                        if (!medicalVisible && error.startsWith('Medical:')) {
-                            return false;
-                        }
+                        if (!medicalVisible && error.startsWith('Medical:')) return false;
                         if (error.startsWith('Contact')) {
                             const contactNum = error.charAt(8);
                             return !isDuplicateContact(student, contactNum);
                         }
-                        return true;
+                        const baseError = getBaseMessage(error);
+                        // Check if message is unhideable
+                        if (UNHIDEABLE_MESSAGES.includes(baseError)) {
+                            return true;
+                        }
+                        return !hiddenErrors.has(baseError);
                     });
 
                     const relevantWarnings = student.validation.warnings.filter(warning => {
-                        if (!medicalVisible && warning.startsWith('Medical:')) {
-                            return false;
-                        }
+                        if (!medicalVisible && warning.startsWith('Medical:')) return false;
                         if (warning.startsWith('Contact')) {
                             const contactNum = warning.charAt(8);
                             return !isDuplicateContact(student, contactNum);
                         }
-                        return true;
+                        const baseWarning = getBaseMessage(warning);
+                        // Check if message is unhideable
+                        if (UNHIDEABLE_MESSAGES.includes(baseWarning)) {
+                            return true;
+                        }
+                        return !hiddenWarnings.has(baseWarning);
                     });
 
-                    // Only show students with remaining errors or warnings
                     if (relevantErrors.length === 0 && relevantWarnings.length === 0) {
                         return false;
                     }
@@ -3087,7 +3608,6 @@
                 return true;
             });
 
-            updateStats();
             renderStudents(filtered);
         }
 
@@ -3099,31 +3619,75 @@
             const studentsList = document.getElementById('studentsList');
 
             studentsList.innerHTML = filteredStudents.map(student => {
-                const relevantErrors = student.validation.errors.filter(error => {
-                    if (!medicalVisible && error.startsWith('Medical:')) return false;
-                    if (error.startsWith('Contact')) {
-                        const contactNum = error.charAt(8);
-                        return !isDuplicateContact(student, contactNum);
-                    }
-                    return true;
-                });
+                // Filter errors and warnings
+                const relevantErrors = filterHiddenMessages(
+                    student.validation.errors.filter(error => {
+                        if (!medicalVisible && error.startsWith('Medical:')) return false;
+                        if (error.startsWith('Contact')) {
+                            const contactNum = error.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        if (error.startsWith('Sibling:')) {
+                            return error === 'Potential Sibling Mismatch';
+                        }
+                        return true;
+                    }), 'error'
+                );
 
-                const relevantWarnings = student.validation.warnings.filter(warning => {
-                    if (!medicalVisible && warning.startsWith('Medical:')) return false;
-                    if (warning.startsWith('Contact')) {
-                        const contactNum = warning.charAt(8);
-                        return !isDuplicateContact(student, contactNum);
-                    }
-                    return true;
-                });
+                const relevantWarnings = filterHiddenMessages(
+                    student.validation.warnings.filter(warning => {
+                        if (!medicalVisible && warning.startsWith('Medical:')) return false;
+                        if (warning.startsWith('Contact')) {
+                            const contactNum = warning.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        if (warning.startsWith('Sibling:')) {
+                            return warning === 'Potential Sibling Match';
+                        }
+                        return true;
+                    }), 'warning'
+                );
 
                 const totalIssues = relevantErrors.length + relevantWarnings.length;
+
+                // Check if student is External or Admissions
+                function isDateInFuture(dateString) {
+                    if (!dateString) return false;
+                    const entryDate = new Date(dateString);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    entryDate.setHours(0, 0, 0, 0);
+                    return entryDate > today;
+                }
+
+                function hasReferToInAddress(student) {
+                    const addressFields = [
+                        student.StuAddL1,
+                        student.StuAddL2,
+                        student.StuAddL3,
+                        student.StuAddL4
+                    ];
+                    return addressFields.some(field =>
+                        field && field.toString().toUpperCase().includes('REFER TO')
+                    );
+                }
+
+                const admissionsTag = isDateInFuture(student.EntryDate) ?
+                    `<span class="relationship-tag" style="background-color: #e0f2fe; color: #0369a1;">Admissions</span>` :
+                    '';
+
+                const externalTag = hasReferToInAddress(student) ?
+                    `<span class="relationship-tag" style="background-color: #f1f5f9; color: #475569;">External</span>` :
+                    '';
 
                 return `
             <div class="student-card ${isDetailed ? 'detailed' : ''} ${relevantErrors.length ? 'error-highlight' :
                         relevantWarnings.length ? 'warning-highlight' : ''
                     }" data-id="${student.id}">
-                <div><strong>${cleanValue(student.PreferredName || student.FirstName)} ${cleanValue(student.Surname)}</strong></div>
+                <div>
+                    <strong>${cleanValue(student.PreferredName || student.FirstName)} ${cleanValue(student.Surname)}</strong>
+                    ${admissionsTag} ${externalTag}
+                </div>
                 <div>${showWasn ? 'WASN: ' + cleanValue(student['CC No.']) : 'SIS Num: ' + cleanValue(student.Reference)}</div>
                 <div style="color: #6b7280; font-size: 0.9em;">Year ${cleanValue(student.Year)} - ${cleanValue(student.Form)}</div>
                 ${totalIssues > 0 ? `
@@ -3131,24 +3695,28 @@
                         ${relevantErrors.length && relevantWarnings.length ?
                             `<span class="validation-error">❌⚠️ ${totalIssues} issues</span>` :
                             relevantErrors.length ?
-                                `<span class="validation-error">❌ ${relevantErrors.length} errors</span>` :
-                                `<span class="validation-warning">⚠️ ${relevantWarnings.length} warnings</span>`
+                                `<span class="validation-error">❌ ${relevantErrors.length} error${relevantErrors.length === 1 ? '' : 's'}</span>` :
+                                `<span class="validation-warning">⚠️ ${relevantWarnings.length} warning${relevantWarnings.length === 1 ? '' : 's'}</span>`
                         }
                     </div>
                     ${isDetailed && totalIssues > 0 ? `
                         <div class="validation-details">
                             ${relevantErrors.length ? `
                                 <ul>
-                                    ${relevantErrors.map(error =>
-                            `<li class="error-item">❌ ${error}</li>`
-                        ).join('')}
+                                    ${relevantErrors.map(error => {
+                            // Extract base error message without prefix
+                            const baseError = error.includes(': ') ? error.split(': ')[1] : error;
+                            return `<li class="error-item">❌ ${baseError}</li>`;
+                        }).join('')}
                                 </ul>
                             ` : ''}
                             ${relevantWarnings.length ? `
                                 <ul>
-                                    ${relevantWarnings.map(warning =>
-                            `<li class="warning-item">⚠️ ${warning}</li>`
-                        ).join('')}
+                                    ${relevantWarnings.map(warning => {
+                            // Extract base warning message without prefix
+                            const baseWarning = warning.includes(': ') ? warning.split(': ')[1] : warning;
+                            return `<li class="warning-item">⚠️ ${baseWarning}</li>`;
+                        }).join('')}
                                 </ul>
                             ` : ''}
                         </div>
@@ -3158,6 +3726,7 @@
         `;
             }).join('');
 
+            // Add click event listeners to all student cards
             document.querySelectorAll('.student-card').forEach(card => {
                 card.addEventListener('click', () => showStudentDetails(card.dataset.id));
             });
@@ -3245,6 +3814,7 @@
             return 'Emergency Contact';
         }
 
+
         function getValidationForField(validation, fieldPrefix) {
             if (!validation) return { errors: [], warnings: [] };
 
@@ -3277,10 +3847,35 @@
             return { errors, warnings };
         }
 
+        // Helper function to extract base message
+        function getBaseMessage(message) {
+            return message.includes(': ') ? message.split(': ')[1] : message;
+        }
+
         function getValidationClass(validation, fieldPrefix) {
             const fieldValidation = getValidationForField(validation, fieldPrefix);
-            if (fieldValidation.errors.length > 0) return 'error-highlight';
-            if (fieldValidation.warnings.length > 0) return 'warning-highlight';
+
+            // Filter visible errors
+            const visibleErrors = fieldValidation.errors.filter(error => {
+                const baseError = error.includes(': ') ? error.split(': ')[1] : error;
+                if (UNHIDEABLE_MESSAGES.includes(baseError)) {
+                    return true;
+                }
+                return !hiddenErrors.has(baseError);
+            });
+
+            // Filter visible warnings
+            const visibleWarnings = fieldValidation.warnings.filter(warning => {
+                const baseWarning = warning.includes(': ') ? warning.split(': ')[1] : warning;
+                if (UNHIDEABLE_MESSAGES.includes(baseWarning)) {
+                    return true;
+                }
+                return !hiddenWarnings.has(baseWarning);
+            });
+
+            // Only apply styling if there are visible messages
+            if (visibleErrors.length > 0) return 'error-highlight';
+            if (visibleWarnings.length > 0) return 'warning-highlight';
             return '';
         }
 
@@ -3288,19 +3883,315 @@
             const fieldValidation = getValidationForField(validation, fieldPrefix);
             const messages = [];
 
-            if (fieldValidation.errors.length > 0) {
-                messages.push(...fieldValidation.errors.map(error =>
+            // Filter and render errors
+            const visibleErrors = fieldValidation.errors.filter(error => {
+                const baseError = error.includes(': ') ? error.split(': ')[1] : error;
+                // Check if message is unhideable
+                if (UNHIDEABLE_MESSAGES.includes(baseError)) {
+                    return true;
+                }
+                return !hiddenErrors.has(baseError);
+            });
+
+            if (visibleErrors.length > 0) {
+                messages.push(...visibleErrors.map(error =>
                     `<div class="error-text">❌ ${error.replace(fieldPrefix + ': ', '')}</div>`
                 ));
             }
-            if (fieldValidation.warnings.length > 0) {
-                messages.push(...fieldValidation.warnings.map(warning =>
+
+            // Filter and render warnings
+            const visibleWarnings = fieldValidation.warnings.filter(warning => {
+                const baseWarning = warning.includes(': ') ? warning.split(': ')[1] : warning;
+                // Check if message is unhideable
+                if (UNHIDEABLE_MESSAGES.includes(baseWarning)) {
+                    return true;
+                }
+                return !hiddenWarnings.has(baseWarning);
+            });
+
+            if (visibleWarnings.length > 0) {
+                messages.push(...visibleWarnings.map(warning =>
                     `<div class="warning-text">⚠️ ${warning.replace(fieldPrefix + ': ', '')}</div>`
                 ));
             }
 
             return messages.join('');
         }
+
+        function hideMessage(message, type) {
+            // Check if message can be hidden
+            if (UNHIDEABLE_MESSAGES.includes(message)) {
+                return; // Do nothing if message is unhideable
+            }
+
+            // Rest of the existing hideMessage function...
+            const studentsList = document.getElementById('studentsList');
+            const studentsScrollPosition = studentsList.scrollTop;
+            const modalContent = document.querySelector('.modal-content');
+            const modalScrollPosition = modalContent?.scrollTop || 0;
+
+            const set = type === 'error' ? hiddenErrors : hiddenWarnings;
+            set.add(message);
+            saveHiddenMessages();
+            updateHiddenMessageCount();
+
+            // Store selected student
+            const activeCard = document.querySelector('.student-card.active');
+            const currentStudentId = activeCard?.dataset.id;
+
+            // Revalidate all students
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+
+            // Update displays
+            updateStats();
+            filterStudents();
+
+            // Restore student selection
+            if (currentStudentId) {
+                const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                if (updatedCard) {
+                    updatedCard.classList.add('active');
+                    showStudentDetails(currentStudentId);
+                }
+            }
+
+            // Restore students list scroll position
+            studentsList.scrollTop = studentsScrollPosition;
+
+            // Refresh the current modal and restore its scroll position
+            const currentModal = document.querySelector('.modal-overlay');
+            if (currentModal) {
+                const modalType = type;  // Store the current modal type
+                currentModal.remove();
+                showSummaryModal(modalType);
+
+                // Restore modal scroll position after a brief delay to ensure content is rendered
+                requestAnimationFrame(() => {
+                    const newModalContent = document.querySelector('.modal-content');
+                    if (newModalContent) {
+                        newModalContent.scrollTop = modalScrollPosition;
+                    }
+                });
+            }
+
+            showNotification(`${type === 'error' ? 'Error' : 'Warning'} type hidden: ${message}`);
+        }
+
+        function unhideAllMessages() {
+            // Store current scroll positions
+            const studentsList = document.getElementById('studentsList');
+            const studentsScrollPosition = studentsList.scrollTop;
+            const activeCard = document.querySelector('.student-card.active');
+            const currentStudentId = activeCard?.dataset.id;
+
+            const hadHiddenMessages = hiddenErrors.size > 0 || hiddenWarnings.size > 0;
+
+            // Clear all hidden messages
+            hiddenErrors.clear();
+            hiddenWarnings.clear();
+
+            // Only save and update if there were actually hidden messages
+            if (hadHiddenMessages) {
+                saveHiddenMessages();
+                updateHiddenMessageCount();
+
+                // Revalidate all students
+                students.forEach(student => {
+                    student.validation = validateStudent(student, xmlData);
+                });
+
+                // Update displays
+                updateStats();
+                filterStudents();
+
+                // Restore student selection and scroll position
+                if (currentStudentId) {
+                    const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                    if (updatedCard) {
+                        updatedCard.classList.add('active');
+                        showStudentDetails(currentStudentId);
+                    }
+                    studentsList.scrollTop = studentsScrollPosition;
+                }
+
+                showNotification('All hidden messages have been restored');
+            }
+        }
+
+        function countHiddenInstances(message, type) {
+            let count = 0;
+            students.forEach(student => {
+                if (type === 'error') {
+                    count += student.validation.errors.filter(error =>
+                        (error.includes(': ') ? error.split(': ')[1] : error) === message
+                    ).length;
+                } else {
+                    count += student.validation.warnings.filter(warning =>
+                        (warning.includes(': ') ? warning.split(': ')[1] : warning) === message
+                    ).length;
+                }
+            });
+            return count;
+        }
+
+        function unhideMessageInModal(message, type) {
+            const set = type === 'error' ? hiddenErrors : hiddenWarnings;
+            set.delete(message);
+            saveHiddenMessages();
+            updateHiddenMessageCount();
+
+            // Store current scroll position and selected student
+            const studentsList = document.getElementById('studentsList');
+            const scrollPosition = studentsList.scrollTop;
+            const activeCard = document.querySelector('.student-card.active');
+            const currentStudentId = activeCard?.dataset.id;
+
+            // Revalidate all students
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+
+            // Update displays
+            updateStats();
+            filterStudents();
+
+            // Restore student selection and scroll position
+            if (currentStudentId) {
+                const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                if (updatedCard) {
+                    updatedCard.classList.add('active');
+                    showStudentDetails(currentStudentId);
+                }
+                studentsList.scrollTop = scrollPosition;
+            }
+
+            // Refresh the current modal
+            const currentModal = document.querySelector('.modal-overlay');
+            if (currentModal) {
+                currentModal.remove();
+                showHiddenMessagesModal();
+            }
+
+            showNotification(`${type === 'error' ? 'Error' : 'Warning'} type restored: ${message}`);
+        }
+
+
+
+        function unhideMessage(message, type) {
+            // Store scroll positions
+            const studentsList = document.getElementById('studentsList');
+            const studentsScrollPosition = studentsList.scrollTop;
+            const modalContent = document.querySelector('.modal-content');
+            const modalScrollPosition = modalContent?.scrollTop || 0;
+
+            const set = type === 'error' ? hiddenErrors : hiddenWarnings;
+            set.delete(message);
+            saveHiddenMessages();
+            updateHiddenMessageCount();
+
+            // Store selected student
+            const activeCard = document.querySelector('.student-card.active');
+            const currentStudentId = activeCard?.dataset.id;
+
+            // Revalidate all students
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+
+            // Update displays
+            updateStats();
+            filterStudents();
+
+            // Restore student selection
+            if (currentStudentId) {
+                const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                if (updatedCard) {
+                    updatedCard.classList.add('active');
+                    showStudentDetails(currentStudentId);
+                }
+            }
+
+            // Restore students list scroll position
+            studentsList.scrollTop = studentsScrollPosition;
+
+            // Refresh the current modal and restore its scroll position
+            const currentModal = document.querySelector('.modal-overlay');
+            if (currentModal) {
+                const modalType = type;  // Store the current modal type
+                currentModal.remove();
+                showSummaryModal(modalType);
+
+                // Restore modal scroll position after a brief delay to ensure content is rendered
+                requestAnimationFrame(() => {
+                    const newModalContent = document.querySelector('.modal-content');
+                    if (newModalContent) {
+                        newModalContent.scrollTop = modalScrollPosition;
+                    }
+                });
+            }
+
+            showNotification(`${type === 'error' ? 'Error' : 'Warning'} type restored: ${message}`);
+        }
+
+        function showAllMessages(type) {
+            // Store scroll positions
+            const studentsList = document.getElementById('studentsList');
+            const studentsScrollPosition = studentsList.scrollTop;
+            const modalContent = document.querySelector('.modal-content');
+            const modalScrollPosition = modalContent?.scrollTop || 0;
+
+            const set = type === 'error' ? hiddenErrors : hiddenWarnings;
+            set.clear();
+            saveHiddenMessages();
+            updateHiddenMessageCount();
+
+            // Store selected student
+            const activeCard = document.querySelector('.student-card.active');
+            const currentStudentId = activeCard?.dataset.id;
+
+            // Revalidate all students
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+
+            // Update displays
+            updateStats();
+            filterStudents();
+
+            // Restore student selection
+            if (currentStudentId) {
+                const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                if (updatedCard) {
+                    updatedCard.classList.add('active');
+                    showStudentDetails(currentStudentId);
+                }
+            }
+
+            // Restore students list scroll position
+            studentsList.scrollTop = studentsScrollPosition;
+
+            // Refresh the current modal and restore its scroll position
+            const currentModal = document.querySelector('.modal-overlay');
+            if (currentModal) {
+                const modalType = type;  // Store the current modal type
+                currentModal.remove();
+                showHiddenMessagesModal();
+
+                // Restore modal scroll position after a brief delay to ensure content is rendered
+                requestAnimationFrame(() => {
+                    const newModalContent = document.querySelector('.modal-content');
+                    if (newModalContent) {
+                        newModalContent.scrollTop = modalScrollPosition;
+                    }
+                });
+            }
+
+            showNotification(`All hidden ${type}s have been restored`);
+        }
+
+
 
         function renderContactSection(student, prefix, number, title, validation) {
             const firstName = student[`${prefix}FirstName${number}`];
@@ -3395,28 +4286,148 @@
         }
 
         function showSummaryModal(type) {
-            const summary = type === 'error' ? getErrorSummary() : getWarningSummary();
+            const summary = type === 'error' ? getErrorSummaryWithHidden() : getWarningSummaryWithHidden();
+            const title = type === 'error' ? 'Error' : 'Warning';
 
             const modalHTML = `
         <div class="modal-overlay" onclick="closeModal(event)">
             <div class="modal">
                 <div class="modal-header">
-                    <div class="modal-title">${type === 'error' ? 'Error' : 'Warning'} Summary</div>
+                    <div class="modal-title">${title} Summary</div>
                     <button class="modal-close" onclick="closeModal(event)">×</button>
                 </div>
-                ${Object.entries(summary)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([message, count]) => `
-                        <div class="${type}-summary-item">
-                            <div>${message}</div>
-                            <div class="summary-count">${count}</div>
-                        </div>
-                    `).join('')}
+                <div class="modal-content">
+                    ${Object.entries(summary)
+                    .sort(([, a], [, b]) => b.count - a.count)
+                    .map(([message, details]) => {
+                        const isUnhideable = UNHIDEABLE_MESSAGES.includes(message);
+                        return `
+                                <div class="${type}-summary-item ${details.hidden ? 'hidden-item' : ''}">
+                                    <div class="summary-item-content">
+                                        <span>${message}</span>
+                                        <span class="summary-count">${details.count}</span>
+                                    </div>
+                                    <div class="summary-item-actions">
+                                        ${isUnhideable ? `
+                                            <button class="hide-message-btn disabled" 
+                                                    disabled 
+                                                    title="This one is complicated, sorry you can't hide it">
+                                                Hide
+                                            </button>
+                                        ` : `
+                                            <button class="${details.hidden ? 'show-message-btn' : 'hide-message-btn'}" 
+                                                    onclick="${details.hidden ?
+                                `unhideMessage('${message}', '${type}')` :
+                                `hideMessage('${message}', '${type}')`}">
+                                                ${details.hidden ? 'Show' : 'Hide'}
+                                            </button>
+                                        `}
+                                    </div>
+                                </div>
+                            `;
+                    }).join('')}
+                </div>
+                ${Object.entries(summary).length === 0 ? `
+                    <div class="no-items-message">No ${type}s to display</div>
+                ` : ''}
             </div>
         </div>
     `;
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // Add new function to get summary including hidden items
+        function getErrorSummaryWithHidden() {
+            const summary = {};
+            const medicalVisible = document.getElementById('medicalToggle').checked;
+            const siblingsEnabled = document.getElementById('potentialSiblingsToggle').checked;
+            const viewYear12 = document.getElementById('viewYear12Toggle').checked;
+            const processedSiblingErrors = new Set();
+
+            students.forEach(student => {
+                // Skip Year 12 students if hidden
+                if (!viewYear12 && student.Year === '12') {
+                    return;
+                }
+
+                student.validation.errors
+                    .filter(error => {
+                        if (!medicalVisible && error.startsWith('Medical:')) return false;
+                        if (error.startsWith('Contact')) {
+                            const contactNum = error.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        if (error.startsWith('Sibling:')) {
+                            if (!siblingsEnabled) return false;
+                            if (error === 'Potential Sibling Mismatch') {
+                                if (processedSiblingErrors.has(error)) return false;
+                                processedSiblingErrors.add(error);
+                                return true;
+                            }
+                            return false;
+                        }
+                        return true;
+                    })
+                    .forEach(error => {
+                        const baseError = error.split(': ')[1] || error;
+                        if (!summary[baseError]) {
+                            summary[baseError] = {
+                                count: 0,
+                                hidden: hiddenErrors.has(baseError)
+                            };
+                        }
+                        summary[baseError].count++;
+                    });
+            });
+
+            return summary;
+        }
+
+        function getWarningSummaryWithHidden() {
+            const summary = {};
+            const medicalVisible = document.getElementById('medicalToggle').checked;
+            const siblingsEnabled = document.getElementById('potentialSiblingsToggle').checked;
+            const viewYear12 = document.getElementById('viewYear12Toggle').checked;
+            const processedSiblingWarnings = new Set();
+
+            students.forEach(student => {
+                // Skip Year 12 students if hidden
+                if (!viewYear12 && student.Year === '12') {
+                    return;
+                }
+
+                student.validation.warnings
+                    .filter(warning => {
+                        if (!medicalVisible && warning.startsWith('Medical:')) return false;
+                        if (warning.startsWith('Contact')) {
+                            const contactNum = warning.charAt(8);
+                            return !isDuplicateContact(student, contactNum);
+                        }
+                        if (warning.startsWith('Sibling:')) {
+                            if (!siblingsEnabled) return false;
+                            if (warning === 'Potential Sibling Match') {
+                                if (processedSiblingWarnings.has(warning)) return false;
+                                processedSiblingWarnings.add(warning);
+                                return true;
+                            }
+                            return false;
+                        }
+                        return true;
+                    })
+                    .forEach(warning => {
+                        const baseWarning = warning.split(': ')[1] || warning;
+                        if (!summary[baseWarning]) {
+                            summary[baseWarning] = {
+                                count: 0,
+                                hidden: hiddenWarnings.has(baseWarning)
+                            };
+                        }
+                        summary[baseWarning].count++;
+                    });
+            });
+
+            return summary;
         }
 
         function closeModal(event) {
@@ -3462,6 +4473,11 @@
                         const baseError = error.split(': ')[1] || error;
                         summary[baseError] = (summary[baseError] || 0) + 1;
                     });
+            });
+            Object.keys(summary).forEach(key => {
+                if (hiddenErrors.has(key)) {
+                    delete summary[key];
+                }
             });
 
             return summary;
@@ -3510,6 +4526,11 @@
                         const baseWarning = warning.split(': ')[1] || warning;
                         summary[baseWarning] = (summary[baseWarning] || 0) + 1;
                     });
+            });
+            Object.keys(summary).forEach(key => {
+                if (hiddenWarnings.has(key)) {
+                    delete summary[key];
+                }
             });
 
             return summary;
@@ -3816,6 +4837,7 @@
             setupFileUpload('xmlUploadArea', handleXMLFile, '.xml');
             updateUploadAreas();
             checkForUpdates();
+            initializeHiddenMessages();
 
             // Get version info
             const versionInfo = getVersionInfo();
