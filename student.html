@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.9.0</title>
+    <title>Student Validator v2.9.0a</title>
     <style>
         /* Base Reset */
         * {
@@ -1803,7 +1803,7 @@
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
-                        <label>Show All Hidden Messages</label>
+                        <label>Show All Hidden Issues</label>
                         <span class="hidden-message-count" id="hiddenMessageCount"></span>
                     </div>
 
@@ -1937,8 +1937,11 @@
                 description: "Allows you to show individual errors and warnings in the student list for a more detailed view at a glance instead of just totals.</br></br>When enabled, displays all validation messages directly in the student list for quick scanning.</br></br>When disabled (default), shows only the total errors and warnings for that student."
             },
             hiddenMessages: {
-                title: "Show All Hidden Messages",
-                description: "Unhide all currently hidden errors and warnings in one click. This will restore visibility to all messages you've previously hidden."
+                title: "Show All Hidden Issues",
+    description: "Unhide all currently hidden errors and warnings in one click. This will restore visibility to all issues you've previously hidden.</br></br>" +
+                "<strong>NOTE: These items are errors for a reason.</br></br>" +
+                "<a href='https://ikon.education.wa.edu.au/-/prepare-sis-classic-integris-data-for-program-kaartdijin-implementation' target='_blank'>" +
+                "To learn more about the Kaartdijin data cleansing requirements, visit Ikon</a>.</strong>"
             }
         };
 
