@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.9.0a</title>
+    <title>Student Validator v2.9.1</title>
     <style>
         /* Base Reset */
         * {
@@ -90,24 +90,30 @@
             border-radius: 8px;
             width: 800px;
             max-width: 90vw;
-            max-height: 80vh;
+            max-height: 90vh;
             display: flex;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .settings-left {
-            width: 50%;
+        .settings-left,
+        .settings-right {
             padding: 1.5rem;
-            border-right: 1px solid #e5e7eb;
             overflow-y: auto;
+            max-height: 90vh;
+            /* Match the content height */
+        }
+
+        .settings-left {
+            width: 40%;
+
+            border-right: 1px solid #e5e7eb;
         }
 
         .settings-right {
-            width: 50%;
-            padding: 1.5rem;
+            width: 60%;
+
             background-color: #f9fafb;
-            overflow-y: auto;
         }
 
         .settings-header {
@@ -1538,6 +1544,34 @@
         </div>
     </div>
 
+    <div class="confirmation-modal" id="kaartdijinConfirmationModal">
+        <div class="confirmation-content">
+            <div class="confirmation-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <div class="confirmation-title">Enable Kaartdijin Workarounds</div>
+            </div>
+            <div class="confirmation-body">
+                I really don't recommend using these workarounds. Personally, it'll be better in the long run if you fix the data now.
+            </div>
+            <div class="confirmation-checkbox">
+                <input type="checkbox" id="kaartdijinAcknowledgement">
+                <label for="kaartdijinAcknowledgement">I want the workarounds anyway</label>
+            </div>
+            <div class="confirmation-buttons">
+                <button class="confirmation-button confirmation-cancel"
+                    onclick="cancelKaartdijinWorkarounds()">Cancel</button>
+                <button class="confirmation-button confirmation-proceed" id="kaartdijinProceedButton"
+                    onclick="proceedWithKaartdijinWorkarounds()" disabled>Enable Workarounds</button>
+            </div>
+        </div>
+    </div>
+
     <noscript>
         <div style="
           position: fixed;
@@ -1845,6 +1879,11 @@
                         <input type="checkbox" id="detailedListToggle" onchange="toggleDetailedList()">
                         <label for="detailedListToggle">Detailed Student List</label>
                     </div>
+                    <div class="settings-option" data-setting="kaartdijinWorkarounds">
+                        <input type="checkbox" id="kaartdijinWorkaroundsToggle"
+                            onchange="toggleKaartdijinWorkarounds()">
+                        <label for="kaartdijinWorkaroundsToggle">Kaartdijin Workarounds</label>
+                    </div>
                 </div>
             </div>
             <div class="settings-right">
@@ -1938,10 +1977,19 @@
             },
             hiddenMessages: {
                 title: "Show All Hidden Issues",
-    description: "Unhide all currently hidden errors and warnings in one click. This will restore visibility to all issues you've previously hidden.</br></br>" +
-                "<strong>NOTE: These items are errors for a reason.</br></br>" +
-                "<a href='https://ikon.education.wa.edu.au/-/prepare-sis-classic-integris-data-for-program-kaartdijin-implementation' target='_blank'>" +
-                "To learn more about the Kaartdijin data cleansing requirements, visit Ikon</a>.</strong>"
+                description: "Unhide all currently hidden errors and warnings in one click. This will restore visibility to all issues you've previously hidden.</br></br>" +
+                    "<strong>NOTE: These items are errors for a reason.</br></br>" +
+                    "<a href='https://ikon.education.wa.edu.au/-/prepare-sis-classic-integris-data-for-program-kaartdijin-implementation' target='_blank'>" +
+                    "To learn more about the Kaartdijin data cleansing requirements, visit Ikon</a>.</strong>"
+            },
+            kaartdijinWorkarounds: {
+                title: "Kaartdijin Workarounds",
+                description: "Enable official Kaartdijin team workarounds for common validation issues.</br></br>" +
+                    "<strong>NOTE:</strong> This only adjusts some validation logic, it does not suggest these workarounds in student details.</br></br>" +
+                    "<strong>WARNING: These are not best practices but are officially endorsed solutions:</strong></br></br>" +
+                    "• Shared mobile numbers between parents can differ only by spaces</br>" +
+                    "• If parents share an email, Parent 2 can use a dummy email: FullName@noemail.com or FullName@example.com</br>" +
+                    "• Emergency contact mobile field accepts any text</br></br>"
             }
         };
 
@@ -2179,7 +2227,8 @@
                 showMedicalNotes: showMedicalNotes,
                 savedAt: new Date().toLocaleString(),
                 checkUpdates: document.getElementById('checkUpdatesToggle').checked,
-                detailedList: document.getElementById('detailedListToggle').checked
+                detailedList: document.getElementById('detailedListToggle').checked,
+                kaartdijinWorkarounds: document.getElementById('kaartdijinWorkaroundsToggle').checked
             };
             localStorage.setItem('studentValidatorSettings', JSON.stringify(settings));
         }
@@ -2209,6 +2258,8 @@
                 if (settings.checkUpdates !== false) {
                     checkForUpdates();
                 }
+                document.getElementById('kaartdijinWorkaroundsToggle').checked =
+                    settings.kaartdijinWorkarounds !== undefined ? settings.kaartdijinWorkarounds : false;
 
                 // Load medical notes state
                 showMedicalNotes = settings.showMedicalNotes || false;
@@ -2264,6 +2315,13 @@
         function cleanValue(value) {
             if (!value) return '';
             return value.toString().replace(/['"]+/g, '').trim();
+        }
+
+        // Helper function to check for dummy email domains
+        function isDummyEmail(email, isParent2) {
+            if (!isParent2 || !email) return false;
+            const lowercaseEmail = email.toLowerCase();
+            return lowercaseEmail.endsWith('@noemail.com') || lowercaseEmail.endsWith('@example.com');
         }
 
         // Helper function to check if a message is hidden
@@ -2771,8 +2829,9 @@
 
         function validateContacts(student, xmlContacts, validation) {
             const checkEmails = document.getElementById('emailMMToggle').checked;
+            const useWorkarounds = document.getElementById('kaartdijinWorkaroundsToggle')?.checked;
 
-            // Check for duplicate emails and mobile numbers within this student's parents
+            // Track duplicate checks
             const parentEmails = new Set();
             const duplicateEmails = new Set();
             const parentMobiles = new Set();
@@ -2791,11 +2850,14 @@
                     }
                 }
 
-                // Track duplicate mobiles
+                // Modified mobile number tracking for workarounds
                 if (mobile && mobile.trim()) {
-                    const cleanedMobile = mobile.toString().replace(/[\s-]/g, '')
-                        .replace(/^\+61/, '0')
-                        .replace(/^61/, '0');
+                    const cleanedMobile = useWorkarounds ?
+                        mobile.toString() : // Keep spaces if workarounds enabled
+                        mobile.toString().replace(/[\s-]/g, '')
+                            .replace(/^\+61/, '0')
+                            .replace(/^61/, '0');
+
                     if (parentMobiles.has(cleanedMobile)) {
                         duplicateMobiles.add(cleanedMobile);
                     } else {
@@ -2814,6 +2876,7 @@
                     const phone = student[`${prefix}Phone${num}T1`];
 
                     if (firstName || surname) {
+                        // Check for Residential College
                         if (isResidentialCollege(student, prefix, num)) {
                             validation.errors.push(`Parent ${num}: Residential College can't be a contact`);
                             return;
@@ -2826,19 +2889,23 @@
                             validation.errors.push(`Parent ${num}: Missing Surname`);
                         }
 
-                        // Email validation
+                        // Modified email validation for workarounds
                         const fmmIsYes = student[`ParFMM${num}`] === 'YES';
+                        const isValidEmailForParent = isValidEmail(email) ||
+                            (useWorkarounds && num === '2' && isDummyEmail(email, true));
+
                         if (checkEmails) {
-                            if (fmmIsYes && (!email || !isValidEmail(email))) {
+                            if (fmmIsYes && (!email || !isValidEmailForParent)) {
                                 validation.errors.push(`Parent ${num}: Invalid or missing email`);
                             }
                         } else {
-                            if (!email || !isValidEmail(email)) {
+                            if (!email || !isValidEmailForParent) {
                                 validation.errors.push(`Parent ${num}: Invalid or missing email`);
                             }
                         }
 
-                        if (email && email.trim() && duplicateEmails.has(email.toLowerCase())) {
+                        if (email && email.trim() && duplicateEmails.has(email.toLowerCase()) &&
+                            !(useWorkarounds && num === '2' && isDummyEmail(email, true))) {
                             validation.errors.push(`Parent ${num}: Duplicate email. Unique email required.`);
                         }
 
@@ -2856,17 +2923,27 @@
                         if (!mobile || mobile.trim() === '') {
                             validation.errors.push(`Parent ${num}: Missing mobile number`);
                         } else {
-                            const cleanedMobile = mobile.toString().replace(/[\s-]/g, '')
-                                .replace(/^\+61/, '0')
-                                .replace(/^61/, '0');
+                            const cleanedMobile = useWorkarounds ?
+                                mobile.toString() : // Keep spaces if workarounds enabled
+                                mobile.toString().replace(/[\s-]/g, '')
+                                    .replace(/^\+61/, '0')
+                                    .replace(/^61/, '0');
 
-                            if (duplicateMobiles.has(cleanedMobile)) {
+                            if (duplicateMobiles.has(cleanedMobile) && !useWorkarounds) {
                                 validation.errors.push(`Parent ${num}: Mobile number already used by another parent`);
-                            } else if (!isValidMobileNumber(mobile)) {
-                                validation.errors.push(`Parent ${num}: Invalid mobile number (non-Australia)`);
+                            } else if (!isValidMobileNumber(mobile) && !useWorkarounds) {
+                                const cleaned = mobile.toString().replace(/[\s-]/g, '');
+                                if (!cleaned.toString().match(/^(\+?(61)|0)?4/)) {
+                                    validation.warnings.push(`Parent ${num}: Invalid mobile (Non-Australian)`);
+                                } else if (cleaned.replace(/^\+?(61|0)/, '').length !== 9) {
+                                    validation.warnings.push(`Parent ${num}: Invalid mobile (Length)`);
+                                } else {
+                                    validation.warnings.push(`Parent ${num}: Invalid mobile number format`);
+                                }
                             }
                         }
 
+                        // XML gender validation
                         if (xmlUploaded) {
                             const contacts = xmlContacts?.get(student['CC No.']);
                             const contact = contacts?.find(c => c.relLnkParentNo === num);
@@ -2886,6 +2963,7 @@
                 const phone = student[`ConPhone${num}T1`];
 
                 if ((firstName || surname) && !isDuplicateContact(student, num)) {
+                    // Check for Residential College
                     if (isResidentialCollege(student, 'Con', num)) {
                         validation.errors.push(`Contact ${num}: Residential College can't be a contact`);
                         return;
@@ -2898,13 +2976,25 @@
                         validation.errors.push(`Contact ${num}: Missing Surname`);
                     }
 
-                    const hasMobile = mobile && isValidMobileNumber(mobile);
+                    // Modified contact number validation
+                    const hasMobile = mobile && (useWorkarounds || isValidMobileNumber(mobile));
                     const hasValidPhone = phone && isValidLandlineNumber(phone);
 
                     if (!hasMobile && !hasValidPhone) {
                         validation.errors.push(`Contact ${num}: Must have either a valid mobile or landline number`);
                     } else {
-                        if (mobile && mobile.trim() !== '' && !isValidMobileNumber(mobile)) {
+                        // Phone validation
+                        if (phone && phone.trim() !== '') {
+                            const cleaned = phone.toString().replace(/[\s-]/g, '');
+                            if (cleaned.toString().match(/^(\+?(61)|0)?4/)) {
+                                validation.warnings.push(`Contact ${num}: Mobile number in phone field`);
+                            } else if (!isValidLandlineNumber(phone)) {
+                                validation.errors.push(`Contact ${num}: Invalid phone number`);
+                            }
+                        }
+
+                        // Mobile validation (only if not using workarounds)
+                        if (mobile && mobile.trim() !== '' && !useWorkarounds && !isValidMobileNumber(mobile)) {
                             const cleaned = mobile.toString().replace(/[\s-]/g, '');
                             if (!cleaned.toString().match(/^(\+?(61)|0)?4/)) {
                                 validation.warnings.push(`Contact ${num}: Invalid mobile (Non-Australian)`);
@@ -2914,17 +3004,9 @@
                                 validation.warnings.push(`Contact ${num}: Invalid mobile number format`);
                             }
                         }
-
-                        if (phone && phone.trim() !== '') {
-                            const cleaned = phone.toString().replace(/[\s-]/g, '');
-                            if (cleaned.toString().match(/^(\+?(61)|0)?4/)) {
-                                validation.warnings.push(`Contact ${num}: Mobile number in phone field`);
-                            } else if (!isValidLandlineNumber(phone)) {
-                                validation.errors.push(`Contact ${num}: Invalid phone number`);
-                            }
-                        }
                     }
 
+                    // XML gender validation
                     if (xmlUploaded) {
                         const contacts = xmlContacts?.get(student['CC No.']);
                         const contact = contacts?.find(c => c.order === num);
@@ -2935,6 +3017,9 @@
                 }
             });
         }
+
+
+
 
         function validateAddress(type, address, validation) {
             const errorPrefix = type === 'Student' ? 'Student Address' : type;
@@ -4557,6 +4642,77 @@
             updateStats();
             filterStudents(); // This will now properly filter based on medical visibility
             saveSettings();
+        }
+
+        function toggleKaartdijinWorkarounds() {
+            const toggle = document.getElementById('kaartdijinWorkaroundsToggle');
+
+            if (toggle.checked) {
+                // If trying to enable, show confirmation modal first
+                toggle.checked = false; // Reset the toggle
+                document.getElementById('kaartdijinConfirmationModal').classList.add('active');
+                document.getElementById('kaartdijinAcknowledgement').checked = false;
+                document.getElementById('kaartdijinProceedButton').disabled = true;
+            } else {
+                // If disabling, proceed normally
+                applyKaartdijinWorkarounds(false);
+            }
+        }
+
+        document.getElementById('kaartdijinAcknowledgement')?.addEventListener('change', function () {
+            document.getElementById('kaartdijinProceedButton').disabled = !this.checked;
+        });
+
+        // Function to cancel enabling workarounds
+        function cancelKaartdijinWorkarounds() {
+            document.getElementById('kaartdijinConfirmationModal').classList.remove('active');
+            document.getElementById('kaartdijinWorkaroundsToggle').checked = false;
+        }
+
+        // Function to proceed with enabling workarounds
+        function proceedWithKaartdijinWorkarounds() {
+            document.getElementById('kaartdijinConfirmationModal').classList.remove('active');
+            document.getElementById('kaartdijinWorkaroundsToggle').checked = true;
+            applyKaartdijinWorkarounds(true);
+        }
+
+        // Function to actually apply the workaround changes
+        function applyKaartdijinWorkarounds(enabled) {
+            const currentStudentCard = document.querySelector('.student-card.active');
+            const currentStudentId = currentStudentCard?.dataset.id;
+
+            // Store current scroll position of the students list
+            const studentsList = document.getElementById('studentsList');
+            const scrollPosition = studentsList.scrollTop;
+
+            // Revalidate all students
+            students.forEach(student => {
+                student.validation = validateStudent(student, xmlData);
+            });
+
+            // Update the display
+            updateStats();
+            filterStudents();
+
+            if (currentStudentId) {
+                // Re-select the current student and show their updated details
+                const updatedCard = document.querySelector(`.student-card[data-id="${currentStudentId}"]`);
+                if (updatedCard) {
+                    updatedCard.classList.add('active');
+                    showStudentDetails(currentStudentId);
+
+                    // Make sure the card is visible
+                    updatedCard.scrollIntoView({ block: 'nearest' });
+                }
+
+                // Restore the original scroll position
+                studentsList.scrollTop = scrollPosition;
+            }
+
+            saveSettings();
+
+            // Show notification about the change
+            showNotification(`Kaartdijin workarounds ${enabled ? 'enabled' : 'disabled'}`);
         }
 
         function toggleDetailedList() {
