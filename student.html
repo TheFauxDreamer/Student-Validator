@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.9.4</title>
+    <title>Student Validator v2.9.4a</title>
     <style>
         /* Base Reset */
         * {
@@ -2841,10 +2841,10 @@ The first update with the live "check for updates" feature. Yay. 🎉
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
 
-                // List items
-                .replace(/- (.*?)(?:\n|$)/g, '<li>$1</li>')
+                // List items - handle both - and * for bullet points
+                .replace(/^[\s]*[-*] (.*?)$/gm, '<li>$1</li>')
 
-                // Paragraphs
+                // Paragraphs - split on double newlines
                 .split(/\n\s*\n/)
                 .map(paragraph => paragraph.trim())
                 .filter(paragraph => paragraph.length > 0)
