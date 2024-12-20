@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.9.3a</title>
+    <title>Student Validator v2.9.4</title>
     <style>
         /* Base Reset */
         * {
@@ -216,23 +216,25 @@
             padding: 0rem;
         }
 
+        /* Reset specific styles */
+        .settings-option.reset-default {
+            position: relative;
+            /* Ensure proper tooltip positioning */
+        }
+
         .reset-button {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            width: 100%;
-            padding: 0.75rem;
-            background-color: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
-            color: #374151;
-            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
         .reset-button:hover {
-            background-color: #e5e7eb;
+            background: none;
         }
 
         .reset-button svg {
@@ -1408,14 +1410,42 @@
             color: #2563eb;
         }
 
-        .settings-option.manage-messages label {
+        .settings-option.manage-messages,
+        .settings-option.reset-default {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+
+        .settings-option.manage-messages:hover,
+        .settings-option.reset-default:hover {
+            background-color: #f3f4f6;
+        }
+
+
+        .settings-option.manage-messages svg,
+        .settings-option.reset-default svg {
+            color: #2563eb;
+        }
+
+
+        .settings-option.manage-messages label,
+        .settings-option.reset-default label {
             cursor: pointer;
             user-select: none;
             margin-left: 0.5rem;
             color: #374151;
         }
 
-        .hidden-message-count {
+
+
+
+        hidden-message-count,
+        .reset-message-count {
             margin-left: auto;
             background-color: #2563eb;
             color: white;
@@ -1427,7 +1457,8 @@
             display: none;
         }
 
-        .hidden-message-count:not(:empty) {
+        .hidden-message-count:not(:empty),
+        .reset-message-count:not(:empty) {
             display: inline-block;
         }
 
@@ -1529,6 +1560,227 @@
         }
 
 
+        .patch-notes-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .patch-notes-modal.active {
+            display: flex;
+        }
+
+        .patch-notes-content {
+            background: white;
+            border-radius: 0.5rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .patch-notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .patch-notes-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .patch-notes-version {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        .patch-notes-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .patch-notes-close:hover {
+            color: #111827;
+        }
+
+        .patch-notes-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .version-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+
+        .version-content {
+            margin-top: 0.75rem;
+        }
+
+        .version-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+
+        .version-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .patch-notes-body ul {
+            margin: 0.5rem 0 1rem 1.25rem;
+        }
+
+        .patch-notes-body li {
+            margin-bottom: 0.25rem;
+        }
+
+
+        .version-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .version-date {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+
+        .patch-notes-body h1,
+        .patch-notes-body h2,
+        .patch-notes-body h3 {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .patch-notes-body h3 {
+            font-size: 1rem;
+            color: #4b5563;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .patch-notes-body ul,
+        .patch-notes-body ol {
+            margin: 0.5rem 0 1rem 1.5rem;
+        }
+
+        .patch-notes-body li {
+            margin-bottom: 0.25rem;
+        }
+
+
+        .patch-notes-body p {
+            margin-bottom: 0.75rem;
+        }
+
+        .patch-notes-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .patch-notes-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+        }
+
+        .patch-notes-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .view-history-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.925rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            margin: 1rem 0;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .view-history-button:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        .view-history-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @keyframes pulseButton {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .view-history-button {
+            animation: pulseButton 2s infinite;
+        }
+
+        .view-history-button:hover {
+            animation: none;
+        }
+
         /* Make it responsive */
         @media (max-width: 900px) {
             .checks-container {
@@ -1547,6 +1799,22 @@
 </head>
 
 <body>
+
+    <div id="patchNotesModal" class="patch-notes-modal">
+        <div class="patch-notes-content">
+            <div class="patch-notes-header">
+                <div class="patch-notes-title">
+                    Recent Updates
+                    <span class="patch-notes-version"></span>
+                </div>
+                <button class="patch-notes-close" onclick="closePatchNotes()">×</button>
+            </div>
+            <div class="patch-notes-body"></div>
+            <div class="patch-notes-footer">
+                <button class="patch-notes-button" onclick="closePatchNotes()">Got it</button>
+            </div>
+        </div>
+    </div>
 
     <div class="confirmation-modal" id="siblingConfirmationModal">
         <div class="confirmation-content">
@@ -1873,16 +2141,14 @@
                         <label>Show All Hidden Issues</label>
                         <span class="hidden-message-count" id="hiddenMessageCount"></span>
                     </div>
-                    <div class="settings-option reset-option" data-setting="resetDefaults">
-                        <button onclick="resetSettings()" class="reset-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                                <path d="M3 3v5h5"></path>
-                            </svg>
-                            Reset to Default Settings
-                        </button>
+                    <div class="settings-option reset-default" data-setting="resetDefaults" onclick="resetSettings()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                            <path d="M3 3v5h5" />
+                        </svg>
+                        <label>Reset Settings to Default</label>
+                        <span class="reset-message-count"></span>
                     </div>
 
                     <div class="settings-divider"></div>
@@ -2030,7 +2296,13 @@
                     "• No update notifications will be shown</br>" +
                     "• You'll need to manually check for updates</br></br>" +
                     "<em>NOTE: Downloading & Installing updates must still be done manually.</em></br></br>" +
-                    "<strong>PRIVACY: No information ever leaves the validator.</strong>"
+                    "<strong>PRIVACY: No information ever leaves the validator.</strong></br></br>" +
+                    "<button onclick='showAllPatchNotes()' class='view-history-button'>" +
+                    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>" +
+                    "<path d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'/>" +
+                    "</svg>" +
+                    "View All Changes & Updates" +
+                    "</button>"
             },
             detailedList: {
                 title: "Detailed Student List",
@@ -2073,10 +2345,294 @@
             strictPhone: {
                 title: "Strict Phone Field",
                 description: "Controls how mobile numbers in phone fields are handled.</br></br>" +
-                    "When enabled (default): Mobile numbers in phone fields are treated as errors.</br>" +
+                    "When enabled (default): Mobile numbers in phone fields are treated as errors.</br></br>" +
                     "When disabled: Mobile numbers in phone fields are treated as warnings."
             }
         };
+
+
+
+
+        // Manual patch notes for recent versions
+        const manualPatchNotes = {
+            "2.9.3a": {
+                date: "19/12/2024",
+                notes: `
+### Updates
+- Adjusted size of left & right column in settigns modal.
+
+Probably only impacts the spacing on my Macbook, but it matters to me.
+        `
+            },
+            "2.9.3": {
+                date: "19/12/2024",
+                notes: `
+### Updates
+- Fixed the updated medical condition count. (Was only counting students with more that one warning as one in totals)
+- Hidden the "Show Year 12" option given it's the start of the school year.
+- Removed the " ❌ Invalid WASN" error from the student list (not detailed student list)
+- Added an option to "Reset Settings to Default"
+- Fixed students with only medical data issues still appearing in the student list when medical was unchecked.
+- Added new option "Strict Phone Field" (default checked), by default mobile number in phone field will be an error. Unchecking box changes this to a warning.
+        `
+            },
+            "2.9.2": {
+                date: "19/12/2024",
+                notes: `
+### Updates
+- Added to the list of warning & errors that can't be hidden.
+- Created a second tooltip to tell the user these warning & errors can be instead disabled in settings.
+-  Combined the student medical conditions warnings. Instead of an individual warning per condition it's now a total.
+        `
+            },
+            "2.9.1": {
+                date: "14/12/2024",
+                notes: `
+### Updates
+- Implements the Kaartdijin Team workarounds. (I don't personally endorse them so they haven't been checked vigorously.)
+
+The project is now 5000+ lines (including the CSS). Eww..
+        `
+            },
+            "2.9.0a": {
+                date: "14/12/2024",
+                notes: `
+### Updates
+- Added tooltips to errors & warnings that can't be hidden. (Mostly due to being too hard to implement.)
+- Added option in settings to instantly show all hidden issues.
+        `
+            },
+            "2.9.0": {
+                date: "13/12/2024",
+                notes: `
+### Updates
+- Added the ability to individually hide errors & warning. (I don't recommend this, just fix the data now and you won't have future issues. 😁)
+        `
+            },
+            "2.8.7": {
+                date: "12/12/2024",
+                notes: `
+The first update with the live "check for updates" feature. Yay. 🎉
+
+### Updates
+- Added option to show detailed warning & error information in the student list.
+- Option is accessible via settings.        `
+            },
+            "2.8.6": {
+                date: "12/12/2024",
+                notes: `
+### Updates
+- Improved check for available updates on page load
+- Fixed spelling mistakes
+- Added option to disable update checks        `
+            },
+            "2.8.5": {
+                date: "11/12/2024",
+                notes: `
+### Updates
+- Added online check for updates. (No more checking Connect all the time.)
+        `
+            },
+            "2.8.4": {
+                date: "11/12/2024",
+                notes: `
+### Updates
+- Chenged mobile number in phone field to warning
+- Added toggle to hide year 12s        `
+            },
+            "2.8.3": {
+                date: "11/12/2024",
+                notes: `
+### Updates
+- Improved mobile phone check to include variations on monbile number format.
+- Improved address checks        `
+            },
+            "2.8.2": {
+                date: "10/12/2024",
+                notes: `
+### Updates
+- Added additional confirmation popup when enabling the sibling check explaining it's not 100% accurate.
+`
+            },
+            "2.8.1": {
+                date: "10/12/2024",
+                notes: `
+### Updates
+- First implementation of the potential sibling check.
+`
+            },
+            "2.8.0b": {
+                date: "10/12/2024",
+                notes: `
+### Updates
+- Added no JavaScript pop up.
+- Improved Medical checks.
+- Added ability to show medical information with ~ key press.
+`
+            },
+            "2.8.0b": {
+                date: "9/12/2024",
+                notes: `
+### Updates
+- Beta implementation of the medicalcondition checks.
+`
+            },
+            "2.7.5": {
+                date: "9/12/2024",
+                notes: `
+### Updates
+- ESHS only, ability to check & flag external roll students.
+- Added External student tag.`
+            },
+            "2.7.4a": {
+                date: "9/12/2024",
+                notes: `
+### Updates
+- Added flag to show Admissions students more prominently with a tag.
+`
+            },
+            "2.7.4": {
+                date: "9/12/2024",
+                notes: `
+### Updates
+- Initial implementation of roll status checks.
+`
+            },
+            "2.7.3": {
+                date: "9/12/2024",
+                notes: `
+### Updates
+- Unit fixes.
+- Added Student Resident toggle for more precise error/warning handling.
+`
+            },
+            "2.7.2": {
+                date: "6/12/2024",
+                notes: `
+### Updates
+- Fixed Parent flags. Previously they weren't pulling directly from SR, PR, MM. Instead using logic to try work it out.
+`
+            },
+            "2.7.1": {
+                date: "6/12/2024",
+                notes: `
+### Updates
+- Added instructions to landing page for how to generate reports.
+`
+            },
+            "2.6.0": {
+                date: "5/12/2024",
+                notes: `
+### Updates
+- Added auto Google Maps search pin button.
+`
+            },
+            "2.5.0": {
+                date: "5/12/2024",
+                notes: `
+### Updates
+- Added browser localstorage to remember users settings between launches.
+`
+            },
+            "2.4.0": {
+                date: "5/12/2024",
+                notes: `
+### Updates
+- First version tested with staff.
+- Major version bump for staff to differentiate from Integris only version easily.
+- Didn't write proper patch notes for this version. Might go back and look at it later.
+`
+            },
+            "1.3.0": {
+                date: "5/12/2024",
+                notes: `
+### Updates
+- Didn't write patch notes for this version. Might go back and look at it later.
+`
+            },
+            "1.2.2": {
+                date: "4/12/2024",
+                notes: `
+### Updates
+- Didn't write patch notes for this version. Might go back and look at it later.
+`
+            },
+            "1.2.1": {
+                date: "4/12/2024",
+                notes: `
+### Updates
+- Moves checkboxes from header to settings modal.
+- Fixed email address Mail Marker logic.
+`
+            },
+            "1.2.0": {
+                date: "4/12/2024",
+                notes: `
+### Updates
+- Fixing errors cause by edge cases.
+-  Improved logic for error & warning checks.
+`
+            },
+            "1.1.1": {
+                date: "4/12/2024",
+                notes: `
+### Updates
+- Added formatting & styling for video instructions.
+`
+            },
+            "1.1.0": {
+                date: "4/12/2024",
+                notes: `
+### Updates
+- Added basic instructions on where to get datafiles from.
+`
+            },
+            "1.0.0": {
+                date: "4/12/2024",
+                notes: `
+### Updates
+- First Integris only version of the validator.
+- Rewrote all logic to use new data sources from Integris.
+- Improved layout to provide user with more information.
+`
+            },
+            "0.9.0b": {
+                date: "4/12/2024",
+                notes: `
+### Updates
+- Added error & warning stats modals, accessable by clicking on the error or warnings totals.
+`
+            },
+            "0.9.0a": {
+                date: "3/12/2024",
+                notes: `
+### Updates
+- Improved stats calculation logic.
+`
+            },
+            "0.9.0": {
+                date: "3/12/2024",
+                notes: `
+### Updates
+- Added statistics counts to the page.
+`
+            },
+            "0.8.0": {
+                date: "3/12/2024",
+                notes: `
+### Updates
+- Made it so after uploading the XML, the page & current student will automatically refresh to include the new information.
+`
+            },
+            "0.7.0": {
+                date: "3/12/2024",
+                notes: `
+### Updates
+- First version of the new Integris validator that is feature comparable to the original SEQTA version.
+`
+            },
+        };
+
 
 
         // Function to get version and title components with sub-version support
@@ -2106,46 +2662,48 @@
                 console.log('Update checks are disabled');
                 return;
             }
-            console.log('Starting update check...');
+
             const currentVersion = getVersionInfo().version;
-            console.log('Current version:', currentVersion);
+            const lastSeenVersion = localStorage.getItem('lastSeenVersion') || '0.0.0';
 
             try {
-                console.log('Fetching latest release from GitHub...');
                 const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
-                console.log('GitHub API Response:', response.status, response.statusText);
 
                 if (!response.ok) {
-                    throw new Error(`GitHub API returned ${response.status}: ${response.statusText}`);
+                    throw new Error(`GitHub API returned ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('GitHub release data:', data);
 
                 if (data.tag_name) {
                     const latestVersion = data.tag_name.replace('v', '');
-                    console.log('Latest version:', latestVersion);
-                    console.log('Comparing versions...');
 
-                    const isNewer = isNewerVersion(latestVersion, currentVersion);
-                    console.log('Is newer version?', isNewer);
-
-                    if (isNewer) {
-                        console.log('Showing update notification...');
+                    // Show update notification if there's a newer version
+                    if (isNewerVersion(latestVersion, currentVersion)) {
                         showUpdateNotification(latestVersion, data.html_url);
-                    } else {
-                        console.log('No update needed.');
                     }
-                } else {
-                    console.log('No tag_name found in GitHub response');
+
+                    // Get all unseen versions
+                    const unseenVersions = getUnseenVersions(currentVersion, lastSeenVersion);
+
+                    // Add GitHub release if it's newer than last seen
+                    if (isNewerVersion(latestVersion, lastSeenVersion) && !isNewerVersion(latestVersion, currentVersion)) {
+                        unseenVersions.unshift({
+                            version: latestVersion,
+                            date: new Date(data.published_at).toLocaleDateString(),
+                            body: data.body,
+                            isManual: false
+                        });
+                    }
+
+                    // Show patch notes if there are unseen versions
+                    if (unseenVersions.length > 0) {
+                        showPatchNotes(unseenVersions);
+                    }
                 }
             } catch (error) {
                 console.error('Error checking for updates:', error);
             }
-
-            updateAvailable = isNewer;
-            updateSettingsDivider();
-
         }
 
         // Helper function to compare version numbers
@@ -2266,6 +2824,152 @@
             } else if (updateBadge) {
                 updateBadge.style.display = 'none';
             }
+        }
+
+
+        // Function to convert GitHub markdown to HTML
+        function convertMarkdownToHtml(markdown) {
+            if (!markdown) return '';
+
+            let html = markdown
+                // Update heading hierarchy - make ### smaller than Version header
+                .replace(/### (.*)/g, '</ul><h3>$1</h3><ul>')
+                .replace(/## (.*)/g, '</ul><h2>$1</h2><ul>')
+                .replace(/# (.*)/g, '</ul><h1>$1</h1><ul>')
+
+                // Bold and italic
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+
+                // List items
+                .replace(/- (.*?)(?:\n|$)/g, '<li>$1</li>')
+
+                // Paragraphs
+                .split(/\n\s*\n/)
+                .map(paragraph => paragraph.trim())
+                .filter(paragraph => paragraph.length > 0)
+                .map(paragraph => {
+                    if (paragraph.startsWith('<h') || paragraph.startsWith('</ul>')) {
+                        return paragraph;
+                    }
+                    if (paragraph.includes('<li>')) {
+                        return `<ul>${paragraph}</ul>`;
+                    }
+                    return `<p>${paragraph}</p>`;
+                })
+                .join('\n');
+
+            // Clean up empty lists
+            html = html
+                .replace(/<ul>\s*<\/ul>/g, '')
+                .replace(/^<\/ul>/, '')
+                .replace(/<ul>\s*$/, '');
+
+            return html;
+        }
+
+        function getUnseenVersions(currentVersion, lastSeenVersion) {
+            const unseenVersions = [];
+
+            // Add manual patch notes that are newer than last seen version
+            for (const [version, data] of Object.entries(manualPatchNotes)) {
+                if (isNewerVersion(version, lastSeenVersion) && !isNewerVersion(version, currentVersion)) {
+                    unseenVersions.push({
+                        version,
+                        date: data.date,
+                        body: data.notes,
+                        isManual: true
+                    });
+                }
+            }
+
+            // Sort by version number in descending order
+            unseenVersions.sort((a, b) => isNewerVersion(a.version, b.version) ? -1 : 1);
+
+            return unseenVersions;
+        }
+
+        // Function to show patch notes
+        function showPatchNotes(versions) {
+            const modal = document.getElementById('patchNotesModal');
+            const versionSpan = modal.querySelector('.patch-notes-version');
+            const bodyDiv = modal.querySelector('.patch-notes-body');
+
+            // Show latest version in header
+            versionSpan.textContent = `v${versions[0].version}`;
+
+            // Generate HTML with proper heading hierarchy
+            const notesHtml = versions.map(version => `
+        <div class="version-section">
+            <div class="version-header">
+                <span class="version-number">Version ${version.version}</span>
+                <span class="version-date">${version.date}</span>
+            </div>
+            <div class="version-content">
+                ${convertMarkdownToHtml(version.body)}
+            </div>
+        </div>
+    `).join('');
+
+            bodyDiv.innerHTML = notesHtml;
+            modal.classList.add('active');
+
+            // Store latest version as seen
+            localStorage.setItem('lastSeenVersion', versions[0].version);
+        }
+
+        async function showAllPatchNotes() {
+            const currentVersion = getVersionInfo().version;
+            const versions = [];
+
+            try {
+                // Get latest GitHub release
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.tag_name) {
+                        const latestVersion = data.tag_name.replace('v', '');
+                        versions.push({
+                            version: latestVersion,
+                            date: new Date(data.published_at).toLocaleDateString(),
+                            body: data.body,
+                            isManual: false
+                        });
+                    }
+                }
+
+                // Add manual patch notes
+                for (const [version, data] of Object.entries(manualPatchNotes)) {
+                    if (!isNewerVersion(version, currentVersion)) {
+                        versions.push({
+                            version,
+                            date: data.date,
+                            body: data.notes,
+                            isManual: true
+                        });
+                    }
+                }
+
+                // Sort by version number in descending order
+                versions.sort((a, b) => isNewerVersion(a.version, b.version) ? -1 : 1);
+
+                // Show the modal with all versions
+                showPatchNotes(versions);
+
+                // Close the settings modal
+                closeSettingsModal();
+
+            } catch (error) {
+                console.error('Error fetching patch notes:', error);
+            }
+        }
+
+
+        // Function to close patch notes
+        function closePatchNotes() {
+            const modal = document.getElementById('patchNotesModal');
+            modal.classList.remove('active');
         }
 
         // Function to toggle update checking
