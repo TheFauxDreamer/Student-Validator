@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.9.4d</title>
+    <title>Student Validator v2.9.4e</title>
     <style>
         /* Base Reset */
         * {
@@ -2353,9 +2353,19 @@
 
 
 
+
         // Manual patch notes for recent versions
         const manualPatchNotes = {
-"2.9.4c": {
+            "2.9.4d": {
+                date: "22/12/2024",
+                notes: `
+### Updates
+
+I lied. There's at least one more revision before 2025.
+
+- Fixed a lot of spelling mistakes.        `
+            },
+            "2.9.4c": {
                 date: "20/12/2024",
                 notes: `
 ### Updates
@@ -2883,6 +2893,9 @@ Finally happy with the new validator. Shown to staff for the first time.
                 .replace(/## (.*)/g, '</ul><h2>$1</h2><ul>')
                 .replace(/# (.*)/g, '</ul><h1>$1</h1><ul>')
 
+                // Links - handle [text](url) format
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+
                 // Bold and italic
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -2890,7 +2903,7 @@ Finally happy with the new validator. Shown to staff for the first time.
                 // List items - handle both - and * for bullet points
                 .replace(/^[\s]*[-*] (.*?)$/gm, '<li>$1</li>')
 
-                // Paragraphs - split on double newlines
+                // Paragraphs
                 .split(/\n\s*\n/)
                 .map(paragraph => paragraph.trim())
                 .filter(paragraph => paragraph.length > 0)
