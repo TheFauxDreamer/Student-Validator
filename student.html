@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.9.6b</title>
+    <title>Student Validator v2.9.6c</title>
     <script src="demo_data.js"></script>
     <script src="demo_mode.js"></script>
     <style>
@@ -1836,9 +1836,10 @@
         /* Ensure switch maintains consistent size */
         .settings-option.update-option .switch {
             flex: 0 0 48px;
-            /* Fixed width, no shrinking */
             width: 48px;
             height: 24px;
+            margin-left: 0;
+            /* Override default margin for update option */
         }
 
         /* Ensure slider maintains full width */
@@ -1860,7 +1861,59 @@
             flex-wrap: nowrap;
             gap: 0.5rem;
             flex: 1;
-            justify-content: flex-end; /* Right-align the content */
+            justify-content: flex-end;
+            /* Right-align the content */
+        }
+
+        /* Rainbow Animation for Colourful Toggle */
+        @keyframes rainbow {
+            0% {
+                background-color: #FF0000;
+            }
+
+            /* Red */
+            17% {
+                background-color: #FF8E00;
+            }
+
+            /* Orange */
+            33% {
+                background-color: #FFEE00;
+            }
+
+            /* Yellow */
+            50% {
+                background-color: #4DE94C;
+            }
+
+            /* Green */
+            67% {
+                background-color: #3783FF;
+            }
+
+            /* Blue */
+            83% {
+                background-color: #4815AA;
+            }
+
+            /* Indigo */
+            100% {
+                background-color: #FF0000;
+            }
+
+            /* Back to red */
+        }
+
+        /* Apply animation only to colorful toggle when checked */
+        .settings-option[data-setting="colorful"] input:checked+.slider {
+            animation: rainbow 5s linear infinite;
+            background-color: #FF0000;
+            /* Starting color */
+        }
+
+        /* Keep white circle for contrast against all colors */
+        .settings-option[data-setting="colorful"] .slider:before {
+            background-color: white;
         }
 
         /* Update badge styling */
@@ -2554,7 +2607,19 @@
         // Manual patch notes for recent versions
         const manualPatchNotes = {
 
-"2.9.6a": {
+
+
+
+            "2.9.6b": {
+                date: "25/12/2024",
+                notes: `
+### Updates
+
+-             Added missed patch notes.
+
+`
+            },
+            "2.9.6a": {
                 date: "25/12/2024",
                 notes: `
 ### Updates
@@ -2563,7 +2628,7 @@
 
 `
             },
-"2.9.6": {
+            "2.9.6": {
                 date: "25/12/2024",
                 notes: `
 ### Updates
@@ -2573,7 +2638,7 @@
 
 - Changed default behaviour of the ability to hide 'issues', now off by default & must be manually enabled by the user.`
             },
-"2.9.5": {
+            "2.9.5": {
                 date: "24/12/2024",
                 notes: `
 ### Updates
