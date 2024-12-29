@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Validator v2.9.6c</title>
+    <title>Student Validator v2.9.6d</title>
     <script src="demo_data.js"></script>
     <script src="demo_mode.js"></script>
     <style>
@@ -421,7 +421,7 @@
         /* Student List */
         .student-list {
             flex: 1;
-            max-width: 33%;
+            max-width: min(30%, 500px);
             border-right: 1px solid #e5e7eb;
             padding-right: 1rem;
             display: flex;
@@ -2609,7 +2609,16 @@
 
 
 
+"2.9.6c": {
+                date: "27/12/2024",
+                notes: `
+### Updates
 
+- Adjusted the margin on the left of the switch for 'Check for Updates', now its left aligned correctly. (finally)
+
+- Added ridiculous rainbow effect to the 'Colourful' toggle when enabled.
+`
+            },
             "2.9.6b": {
                 date: "25/12/2024",
                 notes: `
@@ -2677,7 +2686,7 @@ This should be the final version before school returns. I've added lots of new f
 ### Updates
 Forgot the updated manual patch notes....
 
--Added missing patch notes for previous version.
+- Added missing patch notes for previous version.
 
 Have to find a way to make this more automatic.
         `
@@ -4985,11 +4994,7 @@ Finally happy with the new validator. Shown to staff for the first time.
                     ${admissionsTag} ${externalTag}
                 </div>
                 <div>${showWasn ? 'WASN: ' + cleanValue(student['CC No.']) : 'SIS Num: ' + cleanValue(student.Reference)}</div>
-                <div style="color: #6b7280; font-size: 0.9em;">
-                    Year ${cleanValue(student.Year)} - ${cleanValue(student.Form)}
-                    ${formError ? '<span class="error-text" style="margin-left: 0.5rem;">❌ Missing Form</span>' : ''}
-                    ${yearError ? '<span class="error-text" style="margin-left: 0.5rem;">❌ Missing Year</span>' : ''}
-                </div>
+
                 ${totalIssues > 0 ? `
                     <div class="validation-message">
                         ${relevantErrors.length && totalWarnings > 0 ?
